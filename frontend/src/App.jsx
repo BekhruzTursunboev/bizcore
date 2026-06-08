@@ -26,7 +26,7 @@ import DarkModeIcon from '@mui/icons-material/DarkMode';
 import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
-const API_URL = 'http://localhost:3000/api';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
 const drawerWidth = 260;
 
@@ -210,13 +210,17 @@ const Patients = () => {
   };
 
   const handleSubmit = async () => {
+    if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.doctorName) return toast.error("Iltimos, barcha maydonlarni to'ldiring!");
     try {
       if (editId) { await axios.put(`${API_URL}/patients/${editId}`, formData); toast.success("Muvaffaqiyatli tahrirlandi!"); }
       else { await axios.post(`${API_URL}/patients`, formData); toast.success("Muvaffaqiyatli saqlandi!"); }
       setOpenDialog(false); fetchPatients();
     } catch (err) { toast.error("Xatolik yuz berdi!"); }
   };
-  const handleDelete = async (id) => { try { await axios.delete(`${API_URL}/patients/${id}`); toast.success("Bemor o'chirildi!"); fetchPatients(); } catch (err) { toast.error("Xatolik!"); } };
+  const handleDelete = async (id) => { 
+    if (!window.confirm("Rostdan ham ushbu bemorni o'chirmoqchimisiz?")) return;
+    try { await axios.delete(`${API_URL}/patients/${id}`); toast.success("Bemor o'chirildi!"); fetchPatients(); } catch (err) { toast.error("Xatolik!"); } 
+  };
 
   const exportPDF = () => {
     const doc = new jsPDF();
@@ -301,13 +305,17 @@ const Appointments = () => {
   }
 
   const handleSubmit = async () => { 
+    if (!formData.patientName.trim() || !formData.doctorName || !formData.date || !formData.time) return toast.error("Barcha maydonlarni to'ldiring!");
     try {
       if (editId) { await axios.put(`${API_URL}/appointments/${editId}`, formData); toast.success("Yangilandi"); }
       else { await axios.post(`${API_URL}/appointments`, formData); toast.success("Navbat yaratildi"); }
       setOpen(false); fetchAppointments(); 
     } catch(err) { toast.error("Xatolik"); }
   };
-  const handleDelete = async (id) => { try { await axios.delete(`${API_URL}/appointments/${id}`); fetchAppointments(); toast.success("O'chirildi"); } catch(e){} };
+  const handleDelete = async (id) => { 
+    if (!window.confirm("Ushbu navbatni o'chirmoqchimisiz?")) return;
+    try { await axios.delete(`${API_URL}/appointments/${id}`); fetchAppointments(); toast.success("O'chirildi"); } catch(e){} 
+  };
 
   const exportPDF = () => {
     const doc = new jsPDF();
@@ -391,13 +399,17 @@ const Staff = () => {
   }
 
   const handleSubmit = async () => { 
+    if (!formData.fullName.trim() || !formData.role || !formData.phone.trim()) return toast.error("Xodim ism-sharifi, lavozimi va telefonini kiriting!");
     try {
       if (editId) { await axios.put(`${API_URL}/staff/${editId}`, formData); toast.success("Yangilandi"); }
       else { await axios.post(`${API_URL}/staff`, formData); toast.success("Qo'shildi"); }
       setOpen(false); fetchStaff(); 
     } catch(err) { toast.error("Xato"); }
   };
-  const handleDelete = async (id) => { try { await axios.delete(`${API_URL}/staff/${id}`); fetchStaff(); toast.success("O'chirildi"); } catch(e){} };
+  const handleDelete = async (id) => { 
+    if (!window.confirm("Xodimni tizimdan o'chirib tashlamoqchimisiz?")) return;
+    try { await axios.delete(`${API_URL}/staff/${id}`); fetchStaff(); toast.success("O'chirildi"); } catch(e){} 
+  };
 
   const exportPDF = () => {
     const doc = new jsPDF();
@@ -488,13 +500,18 @@ const Billing = () => {
   }
 
   const handleSubmit = async () => { 
+    if (!formData.patientName.trim() || !formData.serviceName) return toast.error("Bemor ismi va xizmat turini kiriting!");
+    if (formData.amount <= 0) return toast.error("Summa 0 dan katta bo'lishi shart!");
     try {
       if(editId) { await axios.put(`${API_URL}/billing/${editId}`, formData); toast.success("Yangilandi"); }
       else { await axios.post(`${API_URL}/billing`, formData); toast.success("Qo'shildi"); }
       setOpen(false); fetchBills(); 
     } catch(err) { toast.error("Xato"); }
   };
-  const handleDelete = async (id) => { try { await axios.delete(`${API_URL}/billing/${id}`); fetchBills(); toast.success("O'chirildi"); } catch(e){} };
+  const handleDelete = async (id) => { 
+    if (!window.confirm("Ushbu to'lovni o'chirishga ishonchingiz komilmi?")) return;
+    try { await axios.delete(`${API_URL}/billing/${id}`); fetchBills(); toast.success("O'chirildi"); } catch(e){} 
+  };
 
   const exportPDF = () => {
     const doc = new jsPDF();
