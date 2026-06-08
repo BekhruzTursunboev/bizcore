@@ -653,12 +653,12 @@ const AppLayout = ({ onLogout, themeMode, toggleTheme, theme }) => {
           </Box>
         </Toolbar>
       </AppBar>
-      <Drawer variant="permanent" sx={{ width: drawerWidth, flexShrink: 0, '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box', borderRight: `1px solid ${theme.palette.divider}`, bgcolor: theme.palette.background.paper } }}>
+      <Drawer variant="permanent" sx={{ width: drawerWidth, flexShrink: 0, '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box', borderRight: `1px solid ${theme.palette.divider}`, bgcolor: theme.palette.background.paper, display: 'flex', flexDirection: 'column' } }}>
         <Box sx={{ p: 3, display: 'flex', alignItems: 'center', gap: 2 }}>
           <LocalHospitalIcon sx={{ color: '#3b82f6', fontSize: 32 }} />
           <Typography variant="h5" sx={{ fontWeight: 700, color: theme.palette.text.primary }}>MedUz ERP</Typography>
         </Box>
-        <List sx={{ px: 2, pt: 2 }}>
+        <List sx={{ px: 2, pt: 2, flexGrow: 1 }}>
           {navs.map((n) => (
             <ListItem key={n.text} disablePadding>
               <ListItemButton selected={location.pathname === n.path} onClick={() => navigate(n.path)} sx={{ borderRadius: 2, mb: 1, '&.Mui-selected': { bgcolor: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', '& .MuiListItemIcon-root': { color: '#3b82f6' } } }}>
@@ -668,6 +668,10 @@ const AppLayout = ({ onLogout, themeMode, toggleTheme, theme }) => {
             </ListItem>
           ))}
         </List>
+        <Box sx={{ p: 2, textAlign: 'center', mt: 'auto', borderTop: `1px solid ${theme.palette.divider}` }}>
+          <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.7rem', display: 'block' }}>Komilov Fazliddin tomonidan</Typography>
+          <Typography variant="caption" color="textSecondary" sx={{ fontSize: '0.7rem', display: 'block' }}>tayyorlandi BMI uchun</Typography>
+        </Box>
       </Drawer>
       <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, pt: { xs: 10, md: 12 }, width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` }, overflowX: 'hidden' }}>
         <Container maxWidth="xl" disableGutters sx={{ width: '100%' }}>
