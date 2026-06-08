@@ -108,35 +108,37 @@ const Dashboard = ({ theme }) => {
   if(barData.length === 0) barData.push({ name: 'Umumiy', count: 1 });
 
   return (
-    <Grid container spacing={3}>
-      <Grid item xs={12} sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
+    <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'repeat(12, 1fr)' }, gap: 3, width: '100%' }}>
+      <Box sx={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="h4" sx={{ fontWeight: 700 }}>Asosiy Boshqaruv (Command Center)</Typography>
-      </Grid>
-      <Grid item xs={12} md={4}><StatCard title="Jami Bemorlar" value={patients.length} trend={12.5} subtitle="Barcha vaqtlar" icon={<PeopleOutlinedIcon fontSize="large"/>} theme={theme} /></Grid>
-      <Grid item xs={12} md={4}><StatCard title="Navbatlar (Appointments)" value={appointments.length || 1} trend={3.2} subtitle="Bugungi qabullar" icon={<AssignmentIndIcon fontSize="large"/>} theme={theme} /></Grid>
-      <Grid item xs={12} md={4}><StatCard title="Kassa Tushumi" value={`$${totalRevenue}`} trend={8.4} subtitle="Billing DB'dan olingan" icon={<AttachMoneyIcon fontSize="large"/>} theme={theme} /></Grid>
+      </Box>
+      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 4' } }}><StatCard title="Jami Bemorlar" value={patients.length} trend={12.5} subtitle="Barcha vaqtlar" icon={<PeopleOutlinedIcon fontSize="large"/>} theme={theme} /></Box>
+      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 4' } }}><StatCard title="Navbatlar (Appointments)" value={appointments.length || 1} trend={3.2} subtitle="Bugungi qabullar" icon={<AssignmentIndIcon fontSize="large"/>} theme={theme} /></Box>
+      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 4' } }}><StatCard title="Kassa Tushumi" value={`$${totalRevenue}`} trend={8.4} subtitle="Billing DB'dan olingan" icon={<AttachMoneyIcon fontSize="large"/>} theme={theme} /></Box>
       
-      <Grid item xs={12} md={8}>
-        <Card sx={{ height: 400 }}><CardContent sx={{ p: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 8' }, minWidth: 0 }}>
+        <Card sx={{ height: 400, display: 'flex', flexDirection: 'column' }}><CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h6" sx={{ mb: 3 }}>Haftalik Daromad va Navbatlar (Real ma'lumotlar)</Typography>
-          <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.mode==='dark'?'#334155':'#e2e8f0'} />
-              <XAxis dataKey="name" axisLine={false} tickLine={false} />
-              <YAxis yAxisId="left" axisLine={false} tickLine={false} />
-              <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} />
-              <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8 }} />
-              <Legend />
-              <Line yAxisId="left" type="monotone" name="Daromad ($)" dataKey="daromad" stroke="#3b82f6" strokeWidth={3} />
-              <Line yAxisId="right" type="monotone" name="Navbatlar" dataKey="navbat" stroke="#10b981" strokeWidth={3} />
-            </LineChart>
-          </ResponsiveContainer>
+          <Box sx={{ flex: 1, minHeight: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <LineChart data={chartData}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.mode==='dark'?'#334155':'#e2e8f0'} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} />
+                <YAxis yAxisId="left" axisLine={false} tickLine={false} />
+                <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} />
+                <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8 }} />
+                <Legend />
+                <Line yAxisId="left" type="monotone" name="Daromad ($)" dataKey="daromad" stroke="#3b82f6" strokeWidth={3} />
+                <Line yAxisId="right" type="monotone" name="Navbatlar" dataKey="navbat" stroke="#10b981" strokeWidth={3} />
+              </LineChart>
+            </ResponsiveContainer>
+          </Box>
         </CardContent></Card>
-      </Grid>
+      </Box>
       
-      <Grid item xs={12} md={4}>
+      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 4' }, minWidth: 0 }}>
         <Card sx={{ height: 400, display: 'flex', flexDirection: 'column' }}>
-          <CardContent sx={{ p: 3, flex: 1 }}>
+          <CardContent sx={{ p: 3, flex: 1, overflowY: 'auto' }}>
             <Typography variant="h6" sx={{ mb: 3 }}>So'nggi To'lovlar (Feed)</Typography>
             <List>
               {bills.slice(0, 4).map((b, i) => (
@@ -152,38 +154,42 @@ const Dashboard = ({ theme }) => {
             </List>
           </CardContent>
         </Card>
-      </Grid>
+      </Box>
 
-      <Grid item xs={12} md={6}>
-         <Card sx={{ height: 350 }}><CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 6' }, minWidth: 0 }}>
+         <Card sx={{ height: 350, display: 'flex', flexDirection: 'column' }}><CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h6">Bemorlar Holati</Typography>
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
-                {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
-              </Pie>
-              <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8 }}/>
-              <Legend verticalAlign="bottom" height={36}/>
-            </PieChart>
-          </ResponsiveContainer>
+          <Box sx={{ flex: 1, minHeight: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
+                  {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                </Pie>
+                <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8 }}/>
+                <Legend verticalAlign="bottom" height={36}/>
+              </PieChart>
+            </ResponsiveContainer>
+          </Box>
          </CardContent></Card>
-      </Grid>
+      </Box>
 
-      <Grid item xs={12} md={6}>
-         <Card sx={{ height: 350 }}><CardContent sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 6' }, minWidth: 0 }}>
+         <Card sx={{ height: 350, display: 'flex', flexDirection: 'column' }}><CardContent sx={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
           <Typography variant="h6">Xodimlar taqsimoti (Bo'limlar)</Typography>
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart data={barData} margin={{ top: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.mode==='dark'?'#334155':'#e2e8f0'} />
-              <XAxis dataKey="name" axisLine={false} tickLine={false}/>
-              <YAxis axisLine={false} tickLine={false}/>
-              <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8 }}/>
-              <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Xodimlar soni" />
-            </BarChart>
-          </ResponsiveContainer>
+          <Box sx={{ flex: 1, minHeight: 0 }}>
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart data={barData} margin={{ top: 20 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.mode==='dark'?'#334155':'#e2e8f0'} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false}/>
+                <YAxis axisLine={false} tickLine={false}/>
+                <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8 }}/>
+                <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Xodimlar soni" />
+              </BarChart>
+            </ResponsiveContainer>
+          </Box>
          </CardContent></Card>
-      </Grid>
-    </Grid>
+      </Box>
+    </Box>
   );
 };
 
@@ -508,8 +514,8 @@ const AppLayout = ({ onLogout, themeMode, toggleTheme, theme }) => {
           ))}
         </List>
       </Drawer>
-      <Box component="main" sx={{ flexGrow: 1, p: 4, pt: 12 }}>
-        <Container maxWidth="xl" disableGutters>
+      <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, pt: { xs: 10, md: 12 }, width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` }, overflowX: 'hidden' }}>
+        <Container maxWidth="xl" disableGutters sx={{ width: '100%' }}>
           <Routes>
             <Route path="/" element={<Dashboard theme={theme}/>} />
             <Route path="/patients" element={<Patients />} />
