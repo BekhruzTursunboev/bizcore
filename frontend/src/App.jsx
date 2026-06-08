@@ -36,32 +36,37 @@ const safeApi = async (method, resource, id = null, data = null) => {
     return res;
   } catch (err) {
     console.warn(`Backend unreachable. Using Cloud Fallback DB for ${resource}.`);
-    
-    const dbRes = await fetch(FALLBACK_DB_URL);
-    const dbObj = await dbRes.json();
-    const dbData = dbObj.data || { patients: [], staff: [], billing: [], appointments: [] };
-    let items = dbData[resource] || [];
+    try {
+      const dbRes = await fetch(FALLBACK_DB_URL);
+      const dbObj = await dbRes.json();
+      const dbData = dbObj.data || { patients: [], staff: [], billing: [], appointments: [] };
+      let items = dbData[resource] || [];
 
-    if (method === 'GET') return { data: { data: items } };
+      if (method === 'GET') return { data: { data: items } };
 
-    if (method === 'POST') {
-      const newItem = { id: Date.now().toString(), ...data, createdAt: new Date().toISOString() };
-      items.unshift(newItem);
-      dbData[resource] = items;
-      await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
-      return { data: { data: newItem } };
-    }
-    if (method === 'PUT') {
-      items = items.map(item => item.id === id ? { ...item, ...data } : item);
-      dbData[resource] = items;
-      await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
-      return { data: { data: items.find(item => item.id === id) } };
-    }
-    if (method === 'DELETE') {
-      items = items.filter(item => item.id !== id);
-      dbData[resource] = items;
-      await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
-      return { data: { status: 'deleted' } };
+      if (method === 'POST') {
+        const newItem = { id: Date.now().toString(), ...data, createdAt: new Date().toISOString() };
+        items.unshift(newItem);
+        dbData[resource] = items;
+        await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
+        return { data: { data: newItem } };
+      }
+      if (method === 'PUT') {
+        items = items.map(item => String(item.id) === String(id) ? { ...item, ...data } : item);
+        dbData[resource] = items;
+        await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
+        return { data: { data: items.find(item => String(item.id) === String(id)) } };
+      }
+      if (method === 'DELETE') {
+        items = items.filter(item => String(item.id) !== String(id));
+        dbData[resource] = items;
+        await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
+        return { data: { status: 'deleted' } };
+      }
+    } catch (fallbackErr) {
+      console.error("Fallback DB ham ishlamayapti", fallbackErr);
+      if (method === 'GET') return { data: { data: [] } };
+      throw new Error("Tarmoqda ulanish imkonsiz!");
     }
     throw err;
   }
@@ -103,7 +108,7 @@ const LoginScreen = ({ onLogin }) => {
     try {
       const res = await safeApi('GET', 'staff');
       const staffList = res.data?.data || [];
-      const user = staffList.find(s => s.phone === phone && s.password === password);
+      const user = staffList.find(s => s?.phone === phone && s?.password === password);
       
       if (user) {
         toast.success(`${user.role} tizimga kirdi`);
@@ -163,8 +168,8 @@ const Dashboard = ({ theme }) => {
   ];
 
   const pieData = [
-    { name: 'Kuzatuvda', value: patients.filter(p => (p.status || '').toLowerCase().includes('kuzatuv')).length || 1 },
-    { name: 'Sog\'aygan', value: patients.filter(p => (p.status || '').toLowerCase().includes('sog')).length || 1 },
+    { name: 'Kuzatuvda', value: patients.filter(p => (p.status || '').toLowerCase().includes('kuzatuv')).length },
+    { name: 'Sog\'aygan', value: patients.filter(p => (p.status || '').toLowerCase().includes('sog')).length },
   ];
   const COLORS = ['#3b82f6', '#10b981'];
 
@@ -284,8 +289,8 @@ const Patients = () => {
     setOpenDialog(true);
   };
 
-  const handleSubmit = async () => {
-    if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.doctorName) return toast.error("Iltimos, barcha maydonlarni to'ldiring!");
+  const handleSubmit = async () => { 
+    if (!formData.firstName?.trim() || !formData.lastName?.trim() || !formData.doctorName) return toast.error("Iltimos, barcha maydonlarni to'ldiring!");
     try {
       if (editId) { await safeApi('PUT', 'patients', editId, formData); toast.success("Muvaffaqiyatli tahrirlandi!"); }
       else { await safeApi('POST', 'patients', null, formData); toast.success("Muvaffaqiyatli saqlandi!"); }
@@ -386,7 +391,7 @@ const Appointments = () => {
   }
 
   const handleSubmit = async () => { 
-    if (!formData.patientName.trim() || !formData.doctorName || !formData.date || !formData.time) return toast.error("Barcha maydonlarni to'ldiring!");
+    if (!formData.patientName?.trim() || !formData.doctorName || !formData.date || !formData.time) return toast.error("Barcha maydonlarni to'ldiring!");
     try {
       if (editId) { await safeApi('PUT', 'appointments', editId, formData); toast.success("Yangilandi"); }
       else { await safeApi('POST', 'appointments', null, formData); toast.success("Navbat yaratildi"); }
@@ -482,7 +487,7 @@ const Staff = () => {
   }
 
   const handleSubmit = async () => { 
-    if (!formData.fullName.trim() || !formData.role || !formData.phone.trim() || !formData.password.trim()) return toast.error("Xodim ism-sharifi, lavozimi, telefoni va parolini kiriting!");
+    if (!formData.fullName?.trim() || !formData.role || !formData.phone?.trim() || !formData.password?.trim()) return toast.error("Xodim ism-sharifi, lavozimi, telefoni va parolini kiriting!");
     try {
       if (editId) { await safeApi('PUT', 'staff', editId, formData); toast.success("Yangilandi"); }
       else { await safeApi('POST', 'staff', null, formData); toast.success("Qo'shildi"); }
@@ -586,8 +591,8 @@ const Billing = () => {
   }
 
   const handleSubmit = async () => { 
-    if (!formData.patientName.trim() || !formData.serviceName) return toast.error("Bemor ismi va xizmat turini kiriting!");
-    if (formData.amount <= 0) return toast.error("Summa 0 dan katta bo'lishi shart!");
+    if (!formData.patientName?.trim() || !formData.serviceName) return toast.error("Bemor ismi va xizmat turini kiriting!");
+    if (Number(formData.amount) <= 0) return toast.error("Summa 0 dan katta bo'lishi shart!");
     try {
       if(editId) { await safeApi('PUT', 'billing', editId, formData); toast.success("Yangilandi"); }
       else { await safeApi('POST', 'billing', null, formData); toast.success("Qo'shildi"); }
