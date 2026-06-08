@@ -550,6 +550,7 @@ const Staff = () => {
     { field: 'role', headerName: 'Lavozim', flex: 1, minWidth: 150 },
     { field: 'department', headerName: 'Bo\'lim', flex: 1, minWidth: 150 },
     { field: 'phone', headerName: 'Telefon', width: 150 },
+    { field: 'password', headerName: 'Parol', width: 120 },
     { field: 'actions', type: 'actions', width: 100, getActions: (p) => [
       <GridActionsCellItem icon={<EditIcon color="primary"/>} label="Edit" onClick={() => handleOpen(p.row)} />,
       <GridActionsCellItem icon={<DeleteIcon color="error"/>} label="Delete" onClick={() => handleDelete(p.id)} />
