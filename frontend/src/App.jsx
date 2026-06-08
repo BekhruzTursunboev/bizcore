@@ -67,6 +67,8 @@ const safeApi = async (method, resource, id = null, data = null) => {
   }
 };
 
+const formatCurrency = (amount) => new Intl.NumberFormat('uz-UZ').format(amount) + " so'm";
+
 const drawerWidth = 260;
 
 const StatCard = ({ title, value, subtitle, trend, icon, theme }) => (
@@ -153,7 +155,7 @@ const Dashboard = ({ theme }) => {
       </Box>
       <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 4' } }}><StatCard title="Jami Bemorlar" value={patients.length} trend={12.5} subtitle="Barcha vaqtlar" icon={<PeopleOutlinedIcon fontSize="large"/>} theme={theme} /></Box>
       <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 4' } }}><StatCard title="Navbatlar (Appointments)" value={appointments.length || 1} trend={3.2} subtitle="Bugungi qabullar" icon={<AssignmentIndIcon fontSize="large"/>} theme={theme} /></Box>
-      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 4' } }}><StatCard title="Kassa Tushumi" value={`$${totalRevenue}`} trend={8.4} subtitle="Billing DB'dan olingan" icon={<AttachMoneyIcon fontSize="large"/>} theme={theme} /></Box>
+      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 4' } }}><StatCard title="Kassa Tushumi" value={formatCurrency(totalRevenue)} trend={8.4} subtitle="Billing DB'dan olingan" icon={<AttachMoneyIcon fontSize="large"/>} theme={theme} /></Box>
       
       <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 8' }, minWidth: 0 }}>
         <Card sx={{ height: 400, display: 'flex', flexDirection: 'column' }}><CardContent sx={{ p: 3, flex: 1, display: 'flex', flexDirection: 'column' }}>
@@ -167,7 +169,7 @@ const Dashboard = ({ theme }) => {
                 <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} />
                 <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8 }} />
                 <Legend />
-                <Line yAxisId="left" type="monotone" name="Daromad ($)" dataKey="daromad" stroke="#3b82f6" strokeWidth={3} />
+                <Line yAxisId="left" type="monotone" name="Daromad (so'm)" dataKey="daromad" stroke="#3b82f6" strokeWidth={3} />
                 <Line yAxisId="right" type="monotone" name="Navbatlar" dataKey="navbat" stroke="#10b981" strokeWidth={3} />
               </LineChart>
             </ResponsiveContainer>
@@ -184,7 +186,7 @@ const Dashboard = ({ theme }) => {
                 <React.Fragment key={b.id || i}>
                   <ListItem sx={{ px: 0 }}>
                     <ListItemText primary={b.patientName} secondary={b.serviceName} />
-                    <Typography variant="body2" fontWeight="bold" color="success.main">+${b.amount}</Typography>
+                    <Typography variant="body2" fontWeight="bold" color="success.main">+{formatCurrency(b.amount)}</Typography>
                   </ListItem>
                   {i !== 3 && <Divider />}
                 </React.Fragment>
@@ -567,7 +569,7 @@ const Billing = () => {
   const exportPDF = () => {
     const doc = new jsPDF();
     doc.text("Moliya Tushumlari", 14, 15);
-    const tableData = bills.map(b => [b.patientName, b.serviceName, `$${b.amount}`, b.date, b.status]);
+    const tableData = bills.map(b => [b.patientName, b.serviceName, formatCurrency(b.amount), b.date, b.status]);
     doc.autoTable({ head: [["Mijoz/Bemor", "Xizmat turi", "Summa", "Sana", "Holat"]], body: tableData, startY: 20 });
     doc.save(`Moliya.pdf`); toast.success("PDF Yuklab olindi!");
   };
@@ -575,7 +577,7 @@ const Billing = () => {
   const cols = [
     { field: 'patientName', headerName: 'Bemor Ismi', flex: 1, minWidth: 200 },
     { field: 'serviceName', headerName: 'Ko\'rsatilgan Xizmat', flex: 1, minWidth: 150 },
-    { field: 'amount', headerName: 'Summa ($)', width: 120 },
+    { field: 'amount', headerName: 'Summa', width: 120, renderCell: (p) => formatCurrency(p.value) },
     { field: 'date', headerName: 'Sana', width: 120 },
     { field: 'actions', type: 'actions', width: 100, getActions: (p) => [
       <GridActionsCellItem icon={<EditIcon color="primary"/>} label="Edit" onClick={() => handleOpen(p.row)} />,
