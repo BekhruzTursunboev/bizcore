@@ -97,18 +97,27 @@ const StatCard = ({ title, value, subtitle, trend, icon, theme }) => (
 const LoginScreen = ({ onLogin }) => {
   const [phone, setPhone] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
   
   const handleLogin = async () => { 
-    if (phone === 'admin' && password === '1234') { 
+    const p = phone.trim();
+    const pw = password.trim();
+
+    if (!p || !pw) {
+      return toast.error("Telefon raqam va parolni kiriting!");
+    }
+
+    if (p === 'admin' && pw === '1234') { 
       toast.success("Bosh Vrach tizimga kirdi"); 
       onLogin({ id: 'admin', fullName: 'Dr. Rustamov', role: 'Bosh shifokor', phone: 'admin' }); 
       return; 
     } 
     
     try {
+      setLoading(true);
       const res = await safeApi('GET', 'staff');
       const staffList = res.data?.data || [];
-      const user = staffList.find(s => s?.phone === phone && s?.password === password);
+      const user = staffList.find(s => s?.phone === p && s?.password === pw);
       
       if (user) {
         toast.success(`${user.role} tizimga kirdi`);
@@ -118,6 +127,8 @@ const LoginScreen = ({ onLogin }) => {
       }
     } catch (e) {
       toast.error("Tarmoqda xatolik!");
+    } finally {
+      setLoading(false);
     }
   };
   
@@ -129,7 +140,7 @@ const LoginScreen = ({ onLogin }) => {
         <Typography variant="body2" color="textSecondary" sx={{ mb: 4 }}>Tizimga kirish uchun ma'lumotlarni kiriting</Typography>
         <TextField fullWidth label="Telefon raqam" value={phone} onChange={(e) => setPhone(e.target.value)} sx={{ mb: 2 }} />
         <TextField fullWidth type="password" label="Parol" value={password} onChange={(e) => setPassword(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleLogin()} sx={{ mb: 3 }} />
-        <Button fullWidth variant="contained" size="large" onClick={handleLogin}>Kirish</Button>
+        <Button fullWidth variant="contained" size="large" onClick={handleLogin} disabled={loading}>{loading ? "Tekshirilmoqda..." : "Kirish"}</Button>
       </Card>
     </Box>
   );
