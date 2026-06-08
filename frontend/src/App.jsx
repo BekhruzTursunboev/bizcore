@@ -35,9 +35,9 @@ const initialDb = {
     { id: '2', firstName: 'Madina', lastName: 'Aliyeva', phone: '+998931112233', doctorName: 'Dr. Karimova', status: 'Sog\'aygan', appointmentTime: '11:30', reason: 'Ko\'z tekshiruvi' }
   ],
   staff: [
-    { id: '1', fullName: 'Dr. Rustamov', role: 'Bosh shifokor', department: 'Stomatologiya', phone: '+998991234567', status: 'Faol' },
-    { id: '2', fullName: 'Hamshira Asila', role: 'Hamshira', department: 'Qabulxona', phone: '+998997654321', status: 'Faol' },
-    { id: '3', fullName: 'Dr. Karimova', role: 'Shifokor', department: 'Oftalmologiya', phone: '+998901112233', status: 'Faol' }
+    { id: '1', fullName: 'Dr. Rustamov', role: 'Bosh shifokor', department: 'Stomatologiya', phone: '+998991234567', password: '123', status: 'Faol' },
+    { id: '2', fullName: 'Hamshira Asila', role: 'Hamshira', department: 'Qabulxona', phone: '+998997654321', password: '123', status: 'Faol' },
+    { id: '3', fullName: 'Dr. Karimova', role: 'Shifokor', department: 'Oftalmologiya', phone: '+998901112233', password: '123', status: 'Faol' }
   ],
   billing: [
     { id: '1', patientName: 'Aziz Karimov', serviceName: 'Tish yulish', amount: 150000, date: '2026-06-08', status: 'To\'langan' },
@@ -140,7 +140,11 @@ const LoginScreen = ({ onLogin }) => {
       setLoading(true);
       const res = await safeApi('GET', 'staff');
       const staffList = res.data?.data || [];
-      const user = staffList.find(s => s?.phone === p && s?.password === pw);
+      
+      const normalizePhone = (ph) => (ph || '').replace(/\D/g, '');
+      const inputPhone = normalizePhone(p);
+      
+      const user = staffList.find(s => normalizePhone(s?.phone) === inputPhone && s?.password === pw);
       
       if (user) {
         toast.success(`${user.role} tizimga kirdi`);
