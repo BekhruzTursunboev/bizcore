@@ -367,7 +367,7 @@ const Patients = () => {
   );
 };
 
-const Appointments = () => {
+const Appointments = ({ loggedInUser }) => {
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [search, setSearch] = useState('');
