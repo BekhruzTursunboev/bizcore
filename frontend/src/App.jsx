@@ -29,17 +29,40 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const FALLBACK_DB_URL = 'https://api.restful-api.dev/objects/ff8081819d82fab6019ea6564a494eb4';
 
+const initialDb = {
+  patients: [
+    { id: '1', firstName: 'Aziz', lastName: 'Karimov', phone: '+998901234567', doctorName: 'Dr. Rustamov', status: 'Kuzatuvda', appointmentTime: '10:00', reason: 'Tish og\'rig\'i' },
+    { id: '2', firstName: 'Madina', lastName: 'Aliyeva', phone: '+998931112233', doctorName: 'Dr. Karimova', status: 'Sog\'aygan', appointmentTime: '11:30', reason: 'Ko\'z tekshiruvi' }
+  ],
+  staff: [
+    { id: '1', fullName: 'Dr. Rustamov', role: 'Bosh shifokor', department: 'Stomatologiya', phone: '+998991234567', status: 'Faol' },
+    { id: '2', fullName: 'Hamshira Asila', role: 'Hamshira', department: 'Qabulxona', phone: '+998997654321', status: 'Faol' },
+    { id: '3', fullName: 'Dr. Karimova', role: 'Shifokor', department: 'Oftalmologiya', phone: '+998901112233', status: 'Faol' }
+  ],
+  billing: [
+    { id: '1', patientName: 'Aziz Karimov', serviceName: 'Tish yulish', amount: 150000, date: '2026-06-08', status: 'To\'langan' },
+    { id: '2', patientName: 'Madina Aliyeva', serviceName: 'Ko\'z tekshiruvi', amount: 80000, date: '2026-06-08', status: 'Qarzdorlik' }
+  ],
+  appointments: [
+    { id: '1', patientName: 'Aziz Karimov', doctorName: 'Dr. Rustamov', date: '2026-06-08', time: '10:00', status: 'Kutilmoqda' }
+  ]
+};
+
 const safeApi = async (method, resource, id = null, data = null) => {
   try {
     const url = id ? `${API_URL}/${resource}/${id}` : `${API_URL}/${resource}`;
     const res = await axios({ method, url, data });
     return res;
   } catch (err) {
-    console.warn(`Backend unreachable. Using Cloud Fallback DB for ${resource}.`);
+    // console.warn(`Backend unreachable. Using LocalStorage Fallback for ${resource}.`);
     try {
-      const dbRes = await fetch(FALLBACK_DB_URL);
-      const dbObj = await dbRes.json();
-      const dbData = dbObj.data || { patients: [], staff: [], billing: [], appointments: [] };
+      let rawDb = localStorage.getItem('meduz_db');
+      if (!rawDb) {
+        rawDb = JSON.stringify(initialDb);
+        localStorage.setItem('meduz_db', rawDb);
+      }
+      
+      const dbData = JSON.parse(rawDb);
       let items = dbData[resource] || [];
 
       if (method === 'GET') return { data: { data: items } };
@@ -48,25 +71,25 @@ const safeApi = async (method, resource, id = null, data = null) => {
         const newItem = { id: Date.now().toString(), ...data, createdAt: new Date().toISOString() };
         items.unshift(newItem);
         dbData[resource] = items;
-        await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
+        localStorage.setItem('meduz_db', JSON.stringify(dbData));
         return { data: { data: newItem } };
       }
       if (method === 'PUT') {
         items = items.map(item => String(item.id) === String(id) ? { ...item, ...data } : item);
         dbData[resource] = items;
-        await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
+        localStorage.setItem('meduz_db', JSON.stringify(dbData));
         return { data: { data: items.find(item => String(item.id) === String(id)) } };
       }
       if (method === 'DELETE') {
         items = items.filter(item => String(item.id) !== String(id));
         dbData[resource] = items;
-        await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
+        localStorage.setItem('meduz_db', JSON.stringify(dbData));
         return { data: { status: 'deleted' } };
       }
     } catch (fallbackErr) {
-      console.error("Fallback DB ham ishlamayapti", fallbackErr);
+      console.error("LocalStorage DB Error", fallbackErr);
       if (method === 'GET') return { data: { data: [] } };
-      throw new Error("Tarmoqda ulanish imkonsiz!");
+      throw new Error("Local Storage iskaldi!");
     }
     throw err;
   }
