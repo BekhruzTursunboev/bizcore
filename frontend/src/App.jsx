@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { ThemeProvider, createTheme, CssBaseline, Box, Drawer, AppBar, Toolbar, List, Typography, ListItem, ListItemButton, ListItemIcon, ListItemText, Container, Grid, Card, CardContent, Chip, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, InputAdornment, Avatar, Divider } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Box, Drawer, AppBar, Toolbar, List, Typography, ListItem, ListItemButton, ListItemIcon, ListItemText, Container, Grid, Card, CardContent, Chip, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, InputAdornment, Avatar, Divider, FormControl, InputLabel, Select, MenuItem } from '@mui/material';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
 import toast, { Toaster } from 'react-hot-toast';
@@ -253,12 +253,30 @@ const Patients = () => {
       
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{editId ? "Bemorni Tahrirlash" : "Yangi Bemor Qo'shish"}</DialogTitle>
-        <DialogContent dividers><Grid container spacing={3}>
+        <DialogContent dividers><Grid container spacing={3} sx={{ pt: 1 }}>
           <Grid item xs={12} sm={6}><TextField fullWidth label="Ismi" value={formData.firstName} onChange={e => setFormData({...formData, firstName: e.target.value})} /></Grid>
           <Grid item xs={12} sm={6}><TextField fullWidth label="Familiyasi" value={formData.lastName} onChange={e => setFormData({...formData, lastName: e.target.value})} /></Grid>
-          <Grid item xs={12} sm={6}><TextField fullWidth label="Shifokor" value={formData.doctorName} onChange={e => setFormData({...formData, doctorName: e.target.value})} /></Grid>
+          <Grid item xs={12} sm={6}>
+            <FormControl fullWidth>
+              <InputLabel>Shifokor</InputLabel>
+              <Select value={formData.doctorName} label="Shifokor" onChange={e => setFormData({...formData, doctorName: e.target.value})}>
+                <MenuItem value="Dr. Rustamov">Dr. Rustamov</MenuItem>
+                <MenuItem value="Dr. Aliyeva">Dr. Aliyeva</MenuItem>
+                <MenuItem value="Dr. Karimov">Dr. Karimov</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
           <Grid item xs={12} sm={6}><TextField fullWidth label="Vaqt" type="time" value={formData.appointmentTime} onChange={e => setFormData({...formData, appointmentTime: e.target.value})} InputLabelProps={{ shrink: true }} /></Grid>
-          <Grid item xs={12}><TextField fullWidth label="Holati (Kuzatuvda / Sog'aygan)" value={formData.status} onChange={e => setFormData({...formData, status: e.target.value})} /></Grid>
+          <Grid item xs={12}>
+            <FormControl fullWidth>
+              <InputLabel>Holati (Kuzatuvda / Sog'aygan)</InputLabel>
+              <Select value={formData.status} label="Holati (Kuzatuvda / Sog'aygan)" onChange={e => setFormData({...formData, status: e.target.value})}>
+                <MenuItem value="Kuzatuvda">Kuzatuvda</MenuItem>
+                <MenuItem value="Sog'aygan">Sog'aygan</MenuItem>
+                <MenuItem value="Og'ir">Og'ir</MenuItem>
+              </Select>
+            </FormControl>
+          </Grid>
         </Grid></DialogContent>
         <DialogActions><Button onClick={() => setOpenDialog(false)}>Bekor qilish</Button><Button onClick={handleSubmit} variant="contained">{editId ? "Yangilash" : "Saqlash"}</Button></DialogActions>
       </Dialog>
@@ -325,13 +343,32 @@ const Appointments = () => {
         </Box>
       </Box>
       <Card><Box sx={{ height: 600, width: '100%' }}><DataGrid rows={filtered} columns={cols} slots={{ toolbar: GridToolbar }} disableRowSelectionOnClick /></Box></Card>
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth><DialogTitle>{editId ? "Tahrirlash" : "Navbat Qo'shish"}</DialogTitle><DialogContent dividers><Grid container spacing={3}>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth><DialogTitle>{editId ? "Tahrirlash" : "Navbat Qo'shish"}</DialogTitle><DialogContent dividers><Grid container spacing={3} sx={{ pt: 1 }}>
         <Grid item xs={12} sm={6}><TextField fullWidth label="Bemor Ismi" value={formData.patientName} onChange={e=>setFormData({...formData, patientName: e.target.value})} /></Grid>
-        <Grid item xs={12} sm={6}><TextField fullWidth label="Shifokor" value={formData.doctorName} onChange={e=>setFormData({...formData, doctorName: e.target.value})} /></Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
+            <InputLabel>Shifokor</InputLabel>
+            <Select value={formData.doctorName} label="Shifokor" onChange={e=>setFormData({...formData, doctorName: e.target.value})}>
+                <MenuItem value="Dr. Rustamov">Dr. Rustamov</MenuItem>
+                <MenuItem value="Dr. Aliyeva">Dr. Aliyeva</MenuItem>
+                <MenuItem value="Dr. Karimov">Dr. Karimov</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
         <Grid item xs={12} sm={6}><TextField fullWidth type="date" label="Sana" value={formData.date} onChange={e=>setFormData({...formData, date: e.target.value})} InputLabelProps={{shrink: true}} /></Grid>
         <Grid item xs={12} sm={6}><TextField fullWidth type="time" label="Vaqt" value={formData.time} onChange={e=>setFormData({...formData, time: e.target.value})} InputLabelProps={{shrink: true}} /></Grid>
         <Grid item xs={12}><TextField fullWidth label="Sabab" value={formData.reason} onChange={e=>setFormData({...formData, reason: e.target.value})} /></Grid>
-        <Grid item xs={12}><TextField fullWidth label="Holat" value={formData.status} onChange={e=>setFormData({...formData, status: e.target.value})} /></Grid>
+        <Grid item xs={12}>
+          <FormControl fullWidth>
+            <InputLabel>Holat</InputLabel>
+            <Select value={formData.status} label="Holat" onChange={e=>setFormData({...formData, status: e.target.value})}>
+              <MenuItem value="Tasdiqlangan">Tasdiqlangan</MenuItem>
+              <MenuItem value="Kutilmoqda">Kutilmoqda</MenuItem>
+              <MenuItem value="Bajarildi">Bajarildi</MenuItem>
+              <MenuItem value="Bekor qilindi">Bekor qilindi</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
       </Grid></DialogContent><DialogActions><Button onClick={() => setOpen(false)}>Bekor</Button><Button onClick={handleSubmit} variant="contained">Saqlash</Button></DialogActions></Dialog>
     </Box>
   );
@@ -394,12 +431,41 @@ const Staff = () => {
         </Box>
       </Box>
       <Card><Box sx={{ height: 600, width: '100%' }}><DataGrid rows={filtered} columns={cols} slots={{ toolbar: GridToolbar }} disableRowSelectionOnClick /></Box></Card>
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth><DialogTitle>{editId ? "Xodimni Tahrirlash" : "Xodim Qo'shish"}</DialogTitle><DialogContent dividers><Grid container spacing={3}>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth><DialogTitle>{editId ? "Xodimni Tahrirlash" : "Xodim Qo'shish"}</DialogTitle><DialogContent dividers><Grid container spacing={3} sx={{ pt: 1 }}>
         <Grid item xs={12}><TextField fullWidth label="F.I.O" value={formData.fullName} onChange={e=>setFormData({...formData, fullName: e.target.value})} /></Grid>
-        <Grid item xs={12} sm={6}><TextField fullWidth label="Lavozim" value={formData.role} onChange={e=>setFormData({...formData, role: e.target.value})} /></Grid>
-        <Grid item xs={12} sm={6}><TextField fullWidth label="Bo'lim" value={formData.department} onChange={e=>setFormData({...formData, department: e.target.value})} /></Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
+            <InputLabel>Lavozim</InputLabel>
+            <Select value={formData.role} label="Lavozim" onChange={e=>setFormData({...formData, role: e.target.value})}>
+              <MenuItem value="Bosh shifokor">Bosh shifokor</MenuItem>
+              <MenuItem value="Shifokor">Shifokor</MenuItem>
+              <MenuItem value="Hamshira">Hamshira</MenuItem>
+              <MenuItem value="Kassir">Kassir</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
+            <InputLabel>Bo'lim</InputLabel>
+            <Select value={formData.department} label="Bo'lim" onChange={e=>setFormData({...formData, department: e.target.value})}>
+              <MenuItem value="Umumiy">Umumiy</MenuItem>
+              <MenuItem value="Jarrohlik">Jarrohlik</MenuItem>
+              <MenuItem value="Kardiologiya">Kardiologiya</MenuItem>
+              <MenuItem value="Pediatriya">Pediatriya</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
         <Grid item xs={12} sm={6}><TextField fullWidth label="Telefon" value={formData.phone} onChange={e=>setFormData({...formData, phone: e.target.value})} /></Grid>
-        <Grid item xs={12} sm={6}><TextField fullWidth label="Holati" value={formData.status} onChange={e=>setFormData({...formData, status: e.target.value})} /></Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
+            <InputLabel>Holati</InputLabel>
+            <Select value={formData.status} label="Holati" onChange={e=>setFormData({...formData, status: e.target.value})}>
+              <MenuItem value="Faol">Faol</MenuItem>
+              <MenuItem value="Ta'tilda">Ta'tilda</MenuItem>
+              <MenuItem value="Ishdan bo'shatilgan">Ishdan bo'shatilgan</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
       </Grid></DialogContent><DialogActions><Button onClick={() => setOpen(false)}>Bekor</Button><Button onClick={handleSubmit} variant="contained">Saqlash</Button></DialogActions></Dialog>
     </Box>
   );
@@ -462,11 +528,32 @@ const Billing = () => {
         </Box>
       </Box>
       <Card><Box sx={{ height: 600, width: '100%' }}><DataGrid rows={filtered} columns={cols} slots={{ toolbar: GridToolbar }} disableRowSelectionOnClick /></Box></Card>
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth><DialogTitle>{editId ? "To'lovni Tahrirlash" : "To'lov Qo'shish"}</DialogTitle><DialogContent dividers><Grid container spacing={3}>
+      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth><DialogTitle>{editId ? "To'lovni Tahrirlash" : "To'lov Qo'shish"}</DialogTitle><DialogContent dividers><Grid container spacing={3} sx={{ pt: 1 }}>
         <Grid item xs={12} sm={6}><TextField fullWidth label="Bemor" value={formData.patientName} onChange={e=>setFormData({...formData, patientName: e.target.value})} /></Grid>
-        <Grid item xs={12} sm={6}><TextField fullWidth label="Xizmat turi" value={formData.serviceName} onChange={e=>setFormData({...formData, serviceName: e.target.value})} /></Grid>
+        <Grid item xs={12} sm={6}>
+          <FormControl fullWidth>
+            <InputLabel>Xizmat turi</InputLabel>
+            <Select value={formData.serviceName} label="Xizmat turi" onChange={e=>setFormData({...formData, serviceName: e.target.value})}>
+              <MenuItem value="Konsultatsiya">Konsultatsiya</MenuItem>
+              <MenuItem value="Tahlillar">Tahlillar</MenuItem>
+              <MenuItem value="UZI">UZI</MenuItem>
+              <MenuItem value="Muolaja">Muolaja</MenuItem>
+              <MenuItem value="Operatsiya">Operatsiya</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
         <Grid item xs={12} sm={6}><TextField fullWidth type="number" label="Summa" value={formData.amount} onChange={e=>setFormData({...formData, amount: Number(e.target.value)})} /></Grid>
         <Grid item xs={12} sm={6}><TextField fullWidth type="date" label="Sana" value={formData.date} onChange={e=>setFormData({...formData, date: e.target.value})} InputLabelProps={{shrink: true}} /></Grid>
+        <Grid item xs={12}>
+          <FormControl fullWidth>
+            <InputLabel>Holat</InputLabel>
+            <Select value={formData.status} label="Holat" onChange={e=>setFormData({...formData, status: e.target.value})}>
+              <MenuItem value="To'langan">To'langan</MenuItem>
+              <MenuItem value="Qarz">Qarz</MenuItem>
+              <MenuItem value="Bekor qilingan">Bekor qilingan</MenuItem>
+            </Select>
+          </FormControl>
+        </Grid>
       </Grid></DialogContent><DialogActions><Button onClick={() => setOpen(false)}>Bekor</Button><Button onClick={handleSubmit} variant="contained">Saqlash</Button></DialogActions></Dialog>
     </Box>
   );
