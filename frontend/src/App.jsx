@@ -165,9 +165,9 @@ const Dashboard = ({ theme }) => {
               <LineChart data={chartData}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.mode==='dark'?'#334155':'#e2e8f0'} />
                 <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                <YAxis yAxisId="left" axisLine={false} tickLine={false} />
+                <YAxis yAxisId="left" axisLine={false} tickLine={false} tickFormatter={(val) => val >= 1000 ? (val/1000)+'k' : val} />
                 <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} />
-                <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8 }} />
+                <RechartsTooltip formatter={(value, name) => [name === "Daromad (so'm)" ? formatCurrency(value) : value, name]} contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8, boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }} />
                 <Legend />
                 <Line yAxisId="left" type="monotone" name="Daromad (so'm)" dataKey="daromad" stroke="#3b82f6" strokeWidth={3} />
                 <Line yAxisId="right" type="monotone" name="Navbatlar" dataKey="navbat" stroke="#10b981" strokeWidth={3} />
@@ -203,10 +203,10 @@ const Dashboard = ({ theme }) => {
           <Box sx={{ flex: 1, minHeight: 0 }}>
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value">
+                <Pie data={pieData} cx="50%" cy="50%" innerRadius={60} outerRadius={100} paddingAngle={5} dataKey="value" label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
                   {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                 </Pie>
-                <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8 }}/>
+                <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8, boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}/>
                 <Legend verticalAlign="bottom" height={36}/>
               </PieChart>
             </ResponsiveContainer>
@@ -222,8 +222,8 @@ const Dashboard = ({ theme }) => {
               <BarChart data={barData} margin={{ top: 20 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={theme.palette.mode==='dark'?'#334155':'#e2e8f0'} />
                 <XAxis dataKey="name" axisLine={false} tickLine={false}/>
-                <YAxis axisLine={false} tickLine={false}/>
-                <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8 }}/>
+                <YAxis axisLine={false} tickLine={false} allowDecimals={false}/>
+                <RechartsTooltip contentStyle={{ backgroundColor: theme.palette.background.paper, color: theme.palette.text.primary, borderRadius: 8, boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}/>
                 <Bar dataKey="count" fill="#8b5cf6" radius={[4, 4, 0, 0]} name="Xodimlar soni" />
               </BarChart>
             </ResponsiveContainer>
