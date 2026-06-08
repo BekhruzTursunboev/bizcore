@@ -215,7 +215,7 @@ const Patients = () => {
       if (editId) { await axios.put(`${API_URL}/patients/${editId}`, formData); toast.success("Muvaffaqiyatli tahrirlandi!"); }
       else { await axios.post(`${API_URL}/patients`, formData); toast.success("Muvaffaqiyatli saqlandi!"); }
       setOpenDialog(false); fetchPatients();
-    } catch (err) { toast.error("Xatolik yuz berdi!"); }
+    } catch (err) { toast.error("Xatolik: " + (err.response?.data?.message || err.message || "Ulanishda xato")); }
   };
   const handleDelete = async (id) => { 
     if (!window.confirm("Rostdan ham ushbu bemorni o'chirmoqchimisiz?")) return;
@@ -310,7 +310,7 @@ const Appointments = () => {
       if (editId) { await axios.put(`${API_URL}/appointments/${editId}`, formData); toast.success("Yangilandi"); }
       else { await axios.post(`${API_URL}/appointments`, formData); toast.success("Navbat yaratildi"); }
       setOpen(false); fetchAppointments(); 
-    } catch(err) { toast.error("Xatolik"); }
+    } catch(err) { toast.error("Xatolik: " + (err.response?.data?.message || err.message || "Ulanishda xato")); }
   };
   const handleDelete = async (id) => { 
     if (!window.confirm("Ushbu navbatni o'chirmoqchimisiz?")) return;
@@ -404,7 +404,7 @@ const Staff = () => {
       if (editId) { await axios.put(`${API_URL}/staff/${editId}`, formData); toast.success("Yangilandi"); }
       else { await axios.post(`${API_URL}/staff`, formData); toast.success("Qo'shildi"); }
       setOpen(false); fetchStaff(); 
-    } catch(err) { toast.error("Xato"); }
+    } catch(err) { toast.error("Xatolik: " + (err.response?.data?.message || err.message || "Ulanishda xato")); }
   };
   const handleDelete = async (id) => { 
     if (!window.confirm("Xodimni tizimdan o'chirib tashlamoqchimisiz?")) return;
@@ -506,7 +506,7 @@ const Billing = () => {
       if(editId) { await axios.put(`${API_URL}/billing/${editId}`, formData); toast.success("Yangilandi"); }
       else { await axios.post(`${API_URL}/billing`, formData); toast.success("Qo'shildi"); }
       setOpen(false); fetchBills(); 
-    } catch(err) { toast.error("Xato"); }
+    } catch(err) { toast.error("Xatolik: " + (err.response?.data?.message || err.message || "Ulanishda xato")); }
   };
   const handleDelete = async (id) => { 
     if (!window.confirm("Ushbu to'lovni o'chirishga ishonchingiz komilmi?")) return;
