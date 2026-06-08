@@ -90,15 +90,40 @@ const StatCard = ({ title, value, subtitle, trend, icon, theme }) => (
 );
 
 const LoginScreen = ({ onLogin }) => {
-  const [pin, setPin] = useState('');
-  const handleLogin = () => { if (pin === '1234') { toast.success("Tizimga kirdingiz"); onLogin(true); } else toast.error("Noto'g'ri PIN"); };
+  const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  
+  const handleLogin = async () => { 
+    if (phone === 'admin' && password === '1234') { 
+      toast.success("Bosh Vrach tizimga kirdi"); 
+      onLogin({ id: 'admin', fullName: 'Dr. Rustamov', role: 'Bosh shifokor', phone: 'admin' }); 
+      return; 
+    } 
+    
+    try {
+      const res = await safeApi('GET', 'staff');
+      const staffList = res.data?.data || [];
+      const user = staffList.find(s => s.phone === phone && s.password === password);
+      
+      if (user) {
+        toast.success(`${user.role} tizimga kirdi`);
+        onLogin(user);
+      } else {
+        toast.error("Telefon raqam yoki parol noto'g'ri");
+      }
+    } catch (e) {
+      toast.error("Tarmoqda xatolik!");
+    }
+  };
+  
   return (
     <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#f1f5f9' }}>
       <Card sx={{ maxWidth: 400, width: '100%', p: 4, textAlign: 'center' }}>
         <LocalHospitalIcon sx={{ fontSize: 60, color: '#3b82f6', mb: 2 }} />
         <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>MedUz ERP</Typography>
-        <Typography variant="body2" color="textSecondary" sx={{ mb: 4 }}>Oliy ta'lim muassasasi himoyasi uchun maxsus (PIN: 1234)</Typography>
-        <TextField fullWidth type="password" label="PIN Kod" value={pin} onChange={(e) => setPin(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleLogin()} sx={{ mb: 3 }} />
+        <Typography variant="body2" color="textSecondary" sx={{ mb: 4 }}>Tizimga kirish uchun ma'lumotlarni kiriting</Typography>
+        <TextField fullWidth label="Telefon raqam" value={phone} onChange={(e) => setPhone(e.target.value)} sx={{ mb: 2 }} />
+        <TextField fullWidth type="password" label="Parol" value={password} onChange={(e) => setPassword(e.target.value)} onKeyPress={(e) => e.key === 'Enter' && handleLogin()} sx={{ mb: 3 }} />
         <Button fullWidth variant="contained" size="large" onClick={handleLogin}>Kirish</Button>
       </Card>
     </Box>
@@ -128,7 +153,7 @@ const Dashboard = ({ theme }) => {
     } catch (err) {}
   };
 
-  const totalRevenue = bills.reduce((acc, curr) => acc + Number(curr.amount), 0);
+  const totalRevenue = bills.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
   
   const chartData = [
     { name: 'Dush', daromad: totalRevenue * 0.1, navbat: appointments.length + 5 },
@@ -138,14 +163,16 @@ const Dashboard = ({ theme }) => {
   ];
 
   const pieData = [
-    { name: 'Kuzatuvda', value: patients.filter(p => p.status?.toLowerCase().includes('kuzatuv')).length || 1 },
-    { name: 'Sog\'aygan', value: patients.filter(p => p.status?.toLowerCase().includes('sog')).length || 1 },
+    { name: 'Kuzatuvda', value: patients.filter(p => (p.status || '').toLowerCase().includes('kuzatuv')).length || 1 },
+    { name: 'Sog\'aygan', value: patients.filter(p => (p.status || '').toLowerCase().includes('sog')).length || 1 },
   ];
   const COLORS = ['#3b82f6', '#10b981'];
 
-  const staffDeps = {};
-  staff.forEach(s => { staffDeps[s.department] = (staffDeps[s.department] || 0) + 1; });
-  const barData = Object.keys(staffDeps).map(key => ({ name: key, count: staffDeps[key] }));
+  const staffDeps = staff.reduce((acc, curr) => {
+    const dep = curr.department || 'Boshqa';
+    acc[dep] = (acc[dep] || 0) + 1;
+    return acc;
+  }, {});const barData = Object.keys(staffDeps).map(key => ({ name: key, count: staffDeps[key] }));
   if(barData.length === 0) barData.push({ name: 'Umumiy', count: 1 });
 
   return (
@@ -247,7 +274,7 @@ const Patients = () => {
     try { 
       const res = await safeApi('GET', 'patients'); setPatients(res.data?.data || []); 
       const resStaff = await safeApi('GET', 'staff');
-      setDoctors((resStaff.data?.data || []).filter(s => s.role?.toLowerCase().includes('shifokor')));
+      setDoctors((resStaff.data?.data || []).filter(s => (s.role || '').toLowerCase().includes('shifokor')));
     } catch(e){} 
   };
   
@@ -289,7 +316,7 @@ const Patients = () => {
     ]}
   ];
 
-  const filtered = patients.filter(p => (p.firstName + ' ' + p.lastName).toLowerCase().includes(search.toLowerCase()) || p.doctorName.toLowerCase().includes(search.toLowerCase()));
+  const filtered = patients.filter(p => ((p.firstName || '') + ' ' + (p.lastName || '')).toLowerCase().includes((search || '').toLowerCase()) || (p.doctorName || '').toLowerCase().includes((search || '').toLowerCase()));
 
   return (
     <Box>
@@ -348,7 +375,7 @@ const Appointments = () => {
     try { 
       const res = await safeApi('GET', 'appointments'); setAppointments(res.data?.data || []); 
       const resStaff = await safeApi('GET', 'staff');
-      setDoctors((resStaff.data?.data || []).filter(s => s.role?.toLowerCase().includes('shifokor')));
+      setDoctors((resStaff.data?.data || []).filter(s => (s.role || '').toLowerCase().includes('shifokor')));
     } catch(e){} 
   };
   
@@ -392,7 +419,10 @@ const Appointments = () => {
     ] }
   ];
 
-  const filtered = appointments.filter(a => a.patientName?.toLowerCase().includes(search.toLowerCase()) || a.doctorName?.toLowerCase().includes(search.toLowerCase()));
+  let filtered = appointments.filter(a => (a.patientName || '').toLowerCase().includes((search || '').toLowerCase()) || (a.doctorName || '').toLowerCase().includes((search || '').toLowerCase()));
+  if (loggedInUser?.role === 'Shifokor') {
+    filtered = filtered.filter(a => a.doctorName === loggedInUser.fullName);
+  }
 
   return (
     <Box>
@@ -440,19 +470,19 @@ const Staff = () => {
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ fullName: '', role: '', department: '', phone: '', status: 'Faol' });
+  const [formData, setFormData] = useState({ fullName: '', role: '', department: '', phone: '', password: '', status: 'Faol' });
 
   useEffect(() => { fetchStaff(); }, []);
   const fetchStaff = async () => { try { const res = await safeApi('GET', 'staff'); setStaff(res.data?.data || []); } catch(e){} };
   
   const handleOpen = (s = null) => {
-    if (s) { setEditId(s.id); setFormData({ fullName: s.fullName, role: s.role, department: s.department, phone: s.phone, status: s.status }); }
-    else { setEditId(null); setFormData({ fullName: '', role: '', department: '', phone: '', status: 'Faol' }); }
+    if (s) { setEditId(s.id); setFormData({ fullName: s.fullName, role: s.role, department: s.department, phone: s.phone, password: s.password || '', status: s.status }); }
+    else { setEditId(null); setFormData({ fullName: '', role: '', department: '', phone: '', password: '', status: 'Faol' }); }
     setOpen(true);
   }
 
   const handleSubmit = async () => { 
-    if (!formData.fullName.trim() || !formData.role || !formData.phone.trim()) return toast.error("Xodim ism-sharifi, lavozimi va telefonini kiriting!");
+    if (!formData.fullName.trim() || !formData.role || !formData.phone.trim() || !formData.password.trim()) return toast.error("Xodim ism-sharifi, lavozimi, telefoni va parolini kiriting!");
     try {
       if (editId) { await safeApi('PUT', 'staff', editId, formData); toast.success("Yangilandi"); }
       else { await safeApi('POST', 'staff', null, formData); toast.success("Qo'shildi"); }
@@ -483,7 +513,7 @@ const Staff = () => {
     ] }
   ];
 
-  const filtered = staff.filter(s => s.fullName.toLowerCase().includes(search.toLowerCase()) || s.role.toLowerCase().includes(search.toLowerCase()));
+  const filtered = staff.filter(s => (s.fullName || '').toLowerCase().includes((search || '').toLowerCase()) || (s.role || '').toLowerCase().includes((search || '').toLowerCase()));
 
   return (
     <Box>
@@ -505,6 +535,7 @@ const Staff = () => {
               <MenuItem value="Bosh shifokor">Bosh shifokor</MenuItem>
               <MenuItem value="Shifokor">Shifokor</MenuItem>
               <MenuItem value="Hamshira">Hamshira</MenuItem>
+              <MenuItem value="Qabulxona">Qabulxona</MenuItem>
               <MenuItem value="Kassir">Kassir</MenuItem>
             </Select>
           </FormControl>
@@ -517,10 +548,12 @@ const Staff = () => {
               <MenuItem value="Jarrohlik">Jarrohlik</MenuItem>
               <MenuItem value="Kardiologiya">Kardiologiya</MenuItem>
               <MenuItem value="Pediatriya">Pediatriya</MenuItem>
+              <MenuItem value="Ma'muriyat">Ma'muriyat</MenuItem>
             </Select>
           </FormControl>
         </Grid>
         <Grid item xs={12} sm={6}><TextField fullWidth label="Telefon" value={formData.phone} onChange={e=>setFormData({...formData, phone: e.target.value})} /></Grid>
+        <Grid item xs={12} sm={6}><TextField fullWidth label="Parol" type="password" value={formData.password} onChange={e=>setFormData({...formData, password: e.target.value})} /></Grid>
         <Grid item xs={12} sm={6}>
           <FormControl fullWidth>
             <InputLabel>Holati</InputLabel>
@@ -585,7 +618,7 @@ const Billing = () => {
     ] }
   ];
 
-  const filtered = bills.filter(b => b.patientName.toLowerCase().includes(search.toLowerCase()) || b.serviceName.toLowerCase().includes(search.toLowerCase()));
+  const filtered = bills.filter(b => (b.patientName || '').toLowerCase().includes((search || '').toLowerCase()) || (b.serviceName || '').toLowerCase().includes((search || '').toLowerCase()));
 
   return (
     <Box>
@@ -629,24 +662,27 @@ const Billing = () => {
   );
 };
 
-const AppLayout = ({ onLogout, themeMode, toggleTheme, theme }) => {
+const AppLayout = ({ onLogout, themeMode, toggleTheme, theme, loggedInUser }) => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const navs = [
-    { text: 'Boshqaruv Paneli', icon: <DashboardOutlinedIcon />, path: '/' },
-    { text: 'Bemorlar', icon: <PeopleOutlinedIcon />, path: '/patients' },
-    { text: 'Navbatlar', icon: <AssignmentIcon />, path: '/appointments' },
-    { text: 'Xodimlar', icon: <MedicalServicesOutlinedIcon />, path: '/staff' },
-    { text: 'Moliya va Kassa', icon: <ReceiptLongOutlinedIcon />, path: '/billing' },
+  const role = loggedInUser?.role || 'Bosh shifokor';
+  
+  const allNavs = [
+    { text: 'Boshqaruv Paneli', icon: <DashboardOutlinedIcon />, path: '/', roles: ['Bosh shifokor', 'Kassir'] },
+    { text: 'Bemorlar', icon: <PeopleOutlinedIcon />, path: '/patients', roles: ['Bosh shifokor', 'Shifokor', 'Hamshira', 'Qabulxona'] },
+    { text: 'Navbatlar', icon: <AssignmentIcon />, path: '/appointments', roles: ['Bosh shifokor', 'Shifokor', 'Hamshira', 'Qabulxona'] },
+    { text: 'Xodimlar', icon: <MedicalServicesOutlinedIcon />, path: '/staff', roles: ['Bosh shifokor'] },
+    { text: 'Moliya va Kassa', icon: <ReceiptLongOutlinedIcon />, path: '/billing', roles: ['Bosh shifokor', 'Kassir'] },
   ];
+  const navs = allNavs.filter(n => n.roles.includes(role));
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', width: '100%', bgcolor: theme.palette.background.default, color: theme.palette.text.primary }}>
       <CssBaseline />
       <AppBar position="fixed" elevation={0} sx={{ width: `calc(100% - ${drawerWidth}px)`, ml: `${drawerWidth}px`, bgcolor: theme.palette.mode === 'dark' ? 'rgba(30,41,59,0.8)' : 'rgba(255,255,255,0.8)', borderBottom: `1px solid ${theme.palette.divider}`, backdropFilter: 'blur(8px)', color: theme.palette.text.primary }}>
         <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Typography variant="h6" fontWeight="bold">Dr. Rustamov (Bosh shifokor)</Typography>
+          <Typography variant="h6" fontWeight="bold">{loggedInUser?.fullName || 'Foydalanuvchi'} ({role})</Typography>
           <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
             <IconButton onClick={toggleTheme} color="inherit">
               {themeMode === 'light' ? <DarkModeIcon /> : <LightModeIcon />}
@@ -680,7 +716,7 @@ const AppLayout = ({ onLogout, themeMode, toggleTheme, theme }) => {
           <Routes>
             <Route path="/" element={<Dashboard theme={theme}/>} />
             <Route path="/patients" element={<Patients />} />
-            <Route path="/appointments" element={<Appointments />} />
+            <Route path="/appointments" element={<Appointments loggedInUser={loggedInUser}/>} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/billing" element={<Billing />} />
           </Routes>
@@ -691,12 +727,16 @@ const AppLayout = ({ onLogout, themeMode, toggleTheme, theme }) => {
 };
 
 export default function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loggedInUser, setLoggedInUser] = useState(null);
   const [mode, setMode] = useState('light');
   
-  useEffect(() => { if (localStorage.getItem('meduz_auth')) setIsAuthenticated(true); }, []);
-  const handleLogin = () => { setIsAuthenticated(true); localStorage.setItem('meduz_auth', 'true'); };
-  const handleLogout = () => { setIsAuthenticated(false); localStorage.removeItem('meduz_auth'); };
+  useEffect(() => { 
+    const savedUser = localStorage.getItem('meduz_auth_user');
+    if (savedUser) setLoggedInUser(JSON.parse(savedUser)); 
+  }, []);
+  
+  const handleLogin = (user) => { setLoggedInUser(user); localStorage.setItem('meduz_auth_user', JSON.stringify(user)); };
+  const handleLogout = () => { setLoggedInUser(null); localStorage.removeItem('meduz_auth_user'); };
   const toggleTheme = () => { setMode(prev => prev === 'light' ? 'dark' : 'light'); };
 
   const theme = useMemo(() => createTheme({
@@ -720,7 +760,7 @@ export default function App() {
     <div style={{ width: '100vw', minHeight: '100vh', margin: 0, padding: 0, textAlign: 'left', overflowX: 'hidden' }}>
       <ThemeProvider theme={theme}>
         <Toaster position="top-right" />
-        {!isAuthenticated ? <LoginScreen onLogin={handleLogin} /> : <BrowserRouter><AppLayout onLogout={handleLogout} themeMode={mode} toggleTheme={toggleTheme} theme={theme}/></BrowserRouter>}
+        {!loggedInUser ? <LoginScreen onLogin={handleLogin} /> : <BrowserRouter><AppLayout onLogout={handleLogout} themeMode={mode} toggleTheme={toggleTheme} theme={theme} loggedInUser={loggedInUser}/></BrowserRouter>}
       </ThemeProvider>
     </div>
   );
