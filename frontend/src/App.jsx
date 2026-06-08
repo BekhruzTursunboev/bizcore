@@ -65,6 +65,21 @@ const safeApi = async (method, resource, id = null, data = null) => {
       const dbData = JSON.parse(rawDb);
       let items = dbData[resource] || [];
 
+      if (resource === 'staff') {
+        let changed = false;
+        items = items.map(i => {
+          if (!i.password) {
+            changed = true;
+            return { ...i, password: '123' };
+          }
+          return i;
+        });
+        if (changed) {
+          dbData[resource] = items;
+          localStorage.setItem('meduz_db', JSON.stringify(dbData));
+        }
+      }
+
       if (method === 'GET') return { data: { data: items } };
 
       if (method === 'POST') {
