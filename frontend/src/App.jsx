@@ -225,13 +225,20 @@ const Dashboard = ({ theme }) => {
 
 const Patients = () => {
   const [patients, setPatients] = useState([]);
+  const [doctors, setDoctors] = useState([]);
   const [search, setSearch] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
   const [editId, setEditId] = useState(null);
   const [formData, setFormData] = useState({ firstName: '', lastName: '', doctorName: '', status: 'Kuzatuvda', appointmentTime: '09:00' });
 
   useEffect(() => { fetchPatients(); }, []);
-  const fetchPatients = async () => { try { const res = await safeApi('GET', 'patients'); setPatients(res.data?.data || []); } catch(e){} };
+  const fetchPatients = async () => { 
+    try { 
+      const res = await safeApi('GET', 'patients'); setPatients(res.data?.data || []); 
+      const resStaff = await safeApi('GET', 'staff');
+      setDoctors((resStaff.data?.data || []).filter(s => s.role?.toLowerCase().includes('shifokor')));
+    } catch(e){} 
+  };
   
   const handleOpenDialog = (p = null) => {
     if (p) { setEditId(p.id); setFormData({ firstName: p.firstName, lastName: p.lastName, doctorName: p.doctorName, status: p.status, appointmentTime: p.appointmentTime }); }
@@ -294,9 +301,8 @@ const Patients = () => {
             <FormControl fullWidth>
               <InputLabel>Shifokor</InputLabel>
               <Select value={formData.doctorName} label="Shifokor" onChange={e => setFormData({...formData, doctorName: e.target.value})}>
-                <MenuItem value="Dr. Rustamov">Dr. Rustamov</MenuItem>
-                <MenuItem value="Dr. Aliyeva">Dr. Aliyeva</MenuItem>
-                <MenuItem value="Dr. Karimov">Dr. Karimov</MenuItem>
+                {doctors.map(d => <MenuItem key={d.id || d.fullName} value={d.fullName}>{d.fullName}</MenuItem>)}
+                {doctors.length === 0 && <MenuItem value="" disabled>Shifokorlar yo'q (Xodimlar bo'limidan qo'shing)</MenuItem>}
               </Select>
             </FormControl>
           </Grid>
@@ -320,13 +326,20 @@ const Patients = () => {
 
 const Appointments = () => {
   const [appointments, setAppointments] = useState([]);
+  const [doctors, setDoctors] = useState([]);
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState(null);
   const [formData, setFormData] = useState({ patientName: '', doctorName: '', date: '2026-06-08', time: '10:00', reason: '', status: 'Tasdiqlangan' });
 
   useEffect(() => { fetchAppointments(); }, []);
-  const fetchAppointments = async () => { try { const res = await safeApi('GET', 'appointments'); setAppointments(res.data?.data || []); } catch(e){} };
+  const fetchAppointments = async () => { 
+    try { 
+      const res = await safeApi('GET', 'appointments'); setAppointments(res.data?.data || []); 
+      const resStaff = await safeApi('GET', 'staff');
+      setDoctors((resStaff.data?.data || []).filter(s => s.role?.toLowerCase().includes('shifokor')));
+    } catch(e){} 
+  };
   
   const handleOpen = (a = null) => {
     if (a) { setEditId(a.id); setFormData({ patientName: a.patientName, doctorName: a.doctorName, date: a.date, time: a.time, reason: a.reason, status: a.status }); }
@@ -387,9 +400,8 @@ const Appointments = () => {
           <FormControl fullWidth>
             <InputLabel>Shifokor</InputLabel>
             <Select value={formData.doctorName} label="Shifokor" onChange={e=>setFormData({...formData, doctorName: e.target.value})}>
-                <MenuItem value="Dr. Rustamov">Dr. Rustamov</MenuItem>
-                <MenuItem value="Dr. Aliyeva">Dr. Aliyeva</MenuItem>
-                <MenuItem value="Dr. Karimov">Dr. Karimov</MenuItem>
+                {doctors.map(d => <MenuItem key={d.id || d.fullName} value={d.fullName}>{d.fullName}</MenuItem>)}
+                {doctors.length === 0 && <MenuItem value="" disabled>Shifokorlar yo'q (Xodimlar bo'limidan qo'shing)</MenuItem>}
             </Select>
           </FormControl>
         </Grid>
