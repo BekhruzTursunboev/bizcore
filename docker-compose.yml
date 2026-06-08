@@ -1,0 +1,89 @@
+version: '3.8'
+
+services:
+  # Message Broker / Transport for Microservices
+  redis:
+    image: redis:7-alpine
+    container_name: his_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - his_network
+
+  # API Gateway
+  api-gateway:
+    build:
+      context: ./api-gateway
+      dockerfile: Dockerfile
+    container_name: his_api_gateway
+    ports:
+      - "3000:3000"
+    depends_on:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - his_network
+
+  # Patient Microservice
+  patient-service:
+    build:
+      context: ./patient-service
+      dockerfile: Dockerfile
+    container_name: his_patient_service
+    depends_on:
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://bekhruz:uGJ5pdXVXWjjONc3OARKgw@wobbly-manta-16748.jxf.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - his_network
+
+  # Appointment Microservice
+  appointment-service:
+    build:
+      context: ./appointment-service
+      dockerfile: Dockerfile
+    container_name: his_appointment_service
+    depends_on:
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://bekhruz:uGJ5pdXVXWjjONc3OARKgw@wobbly-manta-16748.jxf.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - his_network
+
+  staff-service:
+    build:
+      context: ./staff-service
+      dockerfile: Dockerfile
+    container_name: his_staff_service
+    depends_on:
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://bekhruz:uGJ5pdXVXWjjONc3OARKgw@wobbly-manta-16748.jxf.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - his_network
+
+  billing-service:
+    build:
+      context: ./billing-service
+      dockerfile: Dockerfile
+    container_name: his_billing_service
+    depends_on:
+      - redis
+    environment:
+      - DATABASE_URL=postgresql://bekhruz:uGJ5pdXVXWjjONc3OARKgw@wobbly-manta-16748.jxf.gcp-asia-southeast1.cockroachlabs.cloud:26257/defaultdb?sslmode=verify-full
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    networks:
+      - his_network
+
+networks:
+  his_network:
+    driver: bridge
