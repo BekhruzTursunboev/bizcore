@@ -27,6 +27,7 @@ import AssignmentIndIcon from '@mui/icons-material/AssignmentInd';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+const FALLBACK_DB_URL = 'https://api.restful-api.dev/objects/ff8081819d82fab6019ea6564a494eb4';
 
 const safeApi = async (method, resource, id = null, data = null) => {
   try {
@@ -34,24 +35,32 @@ const safeApi = async (method, resource, id = null, data = null) => {
     const res = await axios({ method, url, data });
     return res;
   } catch (err) {
-    console.warn(`Backend unreachable for ${resource}. Using LocalStorage Mock.`);
-    await new Promise(resolve => setTimeout(resolve, 400)); // tarmoq simulyatsiyasi
-    let items = JSON.parse(localStorage.getItem(`meduz_${resource}`) || '[]');
+    console.warn(`Backend unreachable. Using Cloud Fallback DB for ${resource}.`);
+    
+    const dbRes = await fetch(FALLBACK_DB_URL);
+    const dbObj = await dbRes.json();
+    const dbData = dbObj.data || { patients: [], staff: [], billing: [], appointments: [] };
+    let items = dbData[resource] || [];
+
     if (method === 'GET') return { data: { data: items } };
+
     if (method === 'POST') {
       const newItem = { id: Date.now().toString(), ...data, createdAt: new Date().toISOString() };
       items.unshift(newItem);
-      localStorage.setItem(`meduz_${resource}`, JSON.stringify(items));
+      dbData[resource] = items;
+      await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
       return { data: { data: newItem } };
     }
     if (method === 'PUT') {
       items = items.map(item => item.id === id ? { ...item, ...data } : item);
-      localStorage.setItem(`meduz_${resource}`, JSON.stringify(items));
+      dbData[resource] = items;
+      await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
       return { data: { data: items.find(item => item.id === id) } };
     }
     if (method === 'DELETE') {
       items = items.filter(item => item.id !== id);
-      localStorage.setItem(`meduz_${resource}`, JSON.stringify(items));
+      dbData[resource] = items;
+      await fetch(FALLBACK_DB_URL, { method: 'PUT', body: JSON.stringify({ name: 'meduz_erp_db', data: dbData }), headers: { 'Content-Type': 'application/json' } });
       return { data: { status: 'deleted' } };
     }
     throw err;
