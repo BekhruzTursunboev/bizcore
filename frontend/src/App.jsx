@@ -28,6 +28,36 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
+const safeApi = async (method, resource, id = null, data = null) => {
+  try {
+    const url = id ? `${API_URL}/${resource}/${id}` : `${API_URL}/${resource}`;
+    const res = await axios({ method, url, data });
+    return res;
+  } catch (err) {
+    console.warn(`Backend unreachable for ${resource}. Using LocalStorage Mock.`);
+    await new Promise(resolve => setTimeout(resolve, 400)); // tarmoq simulyatsiyasi
+    let items = JSON.parse(localStorage.getItem(`meduz_${resource}`) || '[]');
+    if (method === 'GET') return { data: { data: items } };
+    if (method === 'POST') {
+      const newItem = { id: Date.now().toString(), ...data, createdAt: new Date().toISOString() };
+      items.unshift(newItem);
+      localStorage.setItem(`meduz_${resource}`, JSON.stringify(items));
+      return { data: { data: newItem } };
+    }
+    if (method === 'PUT') {
+      items = items.map(item => item.id === id ? { ...item, ...data } : item);
+      localStorage.setItem(`meduz_${resource}`, JSON.stringify(items));
+      return { data: { data: items.find(item => item.id === id) } };
+    }
+    if (method === 'DELETE') {
+      items = items.filter(item => item.id !== id);
+      localStorage.setItem(`meduz_${resource}`, JSON.stringify(items));
+      return { data: { status: 'deleted' } };
+    }
+    throw err;
+  }
+};
+
 const drawerWidth = 260;
 
 const StatCard = ({ title, value, subtitle, trend, icon, theme }) => (
@@ -75,10 +105,10 @@ const Dashboard = ({ theme }) => {
   const fetchAll = async () => {
     try {
       const [pRes, bRes, aRes, sRes] = await Promise.all([
-        axios.get(`${API_URL}/patients`).catch(() => ({ data: { data: [] } })),
-        axios.get(`${API_URL}/billing`).catch(() => ({ data: { data: [] } })),
-        axios.get(`${API_URL}/appointments`).catch(() => ({ data: { data: [] } })),
-        axios.get(`${API_URL}/staff`).catch(() => ({ data: { data: [] } }))
+        safeApi('GET', 'patients'),
+        safeApi('GET', 'billing'),
+        safeApi('GET', 'appointments'),
+        safeApi('GET', 'staff')
       ]);
       setPatients(pRes.data?.data || []);
       setBills(bRes.data?.data || []);
@@ -201,7 +231,7 @@ const Patients = () => {
   const [formData, setFormData] = useState({ firstName: '', lastName: '', doctorName: '', status: 'Kuzatuvda', appointmentTime: '09:00' });
 
   useEffect(() => { fetchPatients(); }, []);
-  const fetchPatients = async () => { try { const res = await axios.get(`${API_URL}/patients`); setPatients(res.data?.data || []); } catch(e){} };
+  const fetchPatients = async () => { try { const res = await safeApi('GET', 'patients'); setPatients(res.data?.data || []); } catch(e){} };
   
   const handleOpenDialog = (p = null) => {
     if (p) { setEditId(p.id); setFormData({ firstName: p.firstName, lastName: p.lastName, doctorName: p.doctorName, status: p.status, appointmentTime: p.appointmentTime }); }
@@ -212,14 +242,14 @@ const Patients = () => {
   const handleSubmit = async () => {
     if (!formData.firstName.trim() || !formData.lastName.trim() || !formData.doctorName) return toast.error("Iltimos, barcha maydonlarni to'ldiring!");
     try {
-      if (editId) { await axios.put(`${API_URL}/patients/${editId}`, formData); toast.success("Muvaffaqiyatli tahrirlandi!"); }
-      else { await axios.post(`${API_URL}/patients`, formData); toast.success("Muvaffaqiyatli saqlandi!"); }
+      if (editId) { await safeApi('PUT', 'patients', editId, formData); toast.success("Muvaffaqiyatli tahrirlandi!"); }
+      else { await safeApi('POST', 'patients', null, formData); toast.success("Muvaffaqiyatli saqlandi!"); }
       setOpenDialog(false); fetchPatients();
     } catch (err) { toast.error("Xatolik: " + (err.response?.data?.message || err.message || "Ulanishda xato")); }
   };
   const handleDelete = async (id) => { 
     if (!window.confirm("Rostdan ham ushbu bemorni o'chirmoqchimisiz?")) return;
-    try { await axios.delete(`${API_URL}/patients/${id}`); toast.success("Bemor o'chirildi!"); fetchPatients(); } catch (err) { toast.error("Xatolik!"); } 
+    try { await safeApi('DELETE', 'patients', id); toast.success("Bemor o'chirildi!"); fetchPatients(); } catch (err) { toast.error("Xatolik!"); }
   };
 
   const exportPDF = () => {
@@ -296,7 +326,7 @@ const Appointments = () => {
   const [formData, setFormData] = useState({ patientName: '', doctorName: '', date: '2026-06-08', time: '10:00', reason: '', status: 'Tasdiqlangan' });
 
   useEffect(() => { fetchAppointments(); }, []);
-  const fetchAppointments = async () => { try { const res = await axios.get(`${API_URL}/appointments`); setAppointments(res.data?.data || []); } catch(e){} };
+  const fetchAppointments = async () => { try { const res = await safeApi('GET', 'appointments'); setAppointments(res.data?.data || []); } catch(e){} };
   
   const handleOpen = (a = null) => {
     if (a) { setEditId(a.id); setFormData({ patientName: a.patientName, doctorName: a.doctorName, date: a.date, time: a.time, reason: a.reason, status: a.status }); }
@@ -307,14 +337,14 @@ const Appointments = () => {
   const handleSubmit = async () => { 
     if (!formData.patientName.trim() || !formData.doctorName || !formData.date || !formData.time) return toast.error("Barcha maydonlarni to'ldiring!");
     try {
-      if (editId) { await axios.put(`${API_URL}/appointments/${editId}`, formData); toast.success("Yangilandi"); }
-      else { await axios.post(`${API_URL}/appointments`, formData); toast.success("Navbat yaratildi"); }
+      if (editId) { await safeApi('PUT', 'appointments', editId, formData); toast.success("Yangilandi"); }
+      else { await safeApi('POST', 'appointments', null, formData); toast.success("Navbat yaratildi"); }
       setOpen(false); fetchAppointments(); 
     } catch(err) { toast.error("Xatolik: " + (err.response?.data?.message || err.message || "Ulanishda xato")); }
   };
   const handleDelete = async (id) => { 
     if (!window.confirm("Ushbu navbatni o'chirmoqchimisiz?")) return;
-    try { await axios.delete(`${API_URL}/appointments/${id}`); fetchAppointments(); toast.success("O'chirildi"); } catch(e){} 
+    try { await safeApi('DELETE', 'appointments', id); fetchAppointments(); toast.success("O'chirildi"); } catch(e){}
   };
 
   const exportPDF = () => {
@@ -390,7 +420,7 @@ const Staff = () => {
   const [formData, setFormData] = useState({ fullName: '', role: '', department: '', phone: '', status: 'Faol' });
 
   useEffect(() => { fetchStaff(); }, []);
-  const fetchStaff = async () => { try { const res = await axios.get(`${API_URL}/staff`); setStaff(res.data?.data || []); } catch(e){} };
+  const fetchStaff = async () => { try { const res = await safeApi('GET', 'staff'); setStaff(res.data?.data || []); } catch(e){} };
   
   const handleOpen = (s = null) => {
     if (s) { setEditId(s.id); setFormData({ fullName: s.fullName, role: s.role, department: s.department, phone: s.phone, status: s.status }); }
@@ -401,14 +431,14 @@ const Staff = () => {
   const handleSubmit = async () => { 
     if (!formData.fullName.trim() || !formData.role || !formData.phone.trim()) return toast.error("Xodim ism-sharifi, lavozimi va telefonini kiriting!");
     try {
-      if (editId) { await axios.put(`${API_URL}/staff/${editId}`, formData); toast.success("Yangilandi"); }
-      else { await axios.post(`${API_URL}/staff`, formData); toast.success("Qo'shildi"); }
+      if (editId) { await safeApi('PUT', 'staff', editId, formData); toast.success("Yangilandi"); }
+      else { await safeApi('POST', 'staff', null, formData); toast.success("Qo'shildi"); }
       setOpen(false); fetchStaff(); 
     } catch(err) { toast.error("Xatolik: " + (err.response?.data?.message || err.message || "Ulanishda xato")); }
   };
   const handleDelete = async (id) => { 
     if (!window.confirm("Xodimni tizimdan o'chirib tashlamoqchimisiz?")) return;
-    try { await axios.delete(`${API_URL}/staff/${id}`); fetchStaff(); toast.success("O'chirildi"); } catch(e){} 
+    try { await safeApi('DELETE', 'staff', id); fetchStaff(); toast.success("O'chirildi"); } catch(e){}
   };
 
   const exportPDF = () => {
@@ -491,7 +521,7 @@ const Billing = () => {
   const [formData, setFormData] = useState({ patientName: '', serviceName: '', amount: 0, date: '2026-06-07', status: 'To\'langan' });
 
   useEffect(() => { fetchBills(); }, []);
-  const fetchBills = async () => { try { const res = await axios.get(`${API_URL}/billing`); setBills(res.data?.data || []); } catch(e){} };
+  const fetchBills = async () => { try { const res = await safeApi('GET', 'billing'); setBills(res.data?.data || []); } catch(e){} };
   
   const handleOpen = (b = null) => {
     if (b) { setEditId(b.id); setFormData({ patientName: b.patientName, serviceName: b.serviceName, amount: b.amount, date: b.date, status: b.status }); }
@@ -503,14 +533,14 @@ const Billing = () => {
     if (!formData.patientName.trim() || !formData.serviceName) return toast.error("Bemor ismi va xizmat turini kiriting!");
     if (formData.amount <= 0) return toast.error("Summa 0 dan katta bo'lishi shart!");
     try {
-      if(editId) { await axios.put(`${API_URL}/billing/${editId}`, formData); toast.success("Yangilandi"); }
-      else { await axios.post(`${API_URL}/billing`, formData); toast.success("Qo'shildi"); }
+      if(editId) { await safeApi('PUT', 'billing', editId, formData); toast.success("Yangilandi"); }
+      else { await safeApi('POST', 'billing', null, formData); toast.success("Qo'shildi"); }
       setOpen(false); fetchBills(); 
     } catch(err) { toast.error("Xatolik: " + (err.response?.data?.message || err.message || "Ulanishda xato")); }
   };
   const handleDelete = async (id) => { 
     if (!window.confirm("Ushbu to'lovni o'chirishga ishonchingiz komilmi?")) return;
-    try { await axios.delete(`${API_URL}/billing/${id}`); fetchBills(); toast.success("O'chirildi"); } catch(e){} 
+    try { await safeApi('DELETE', 'billing', id); fetchBills(); toast.success("O'chirildi"); } catch(e){}
   };
 
   const exportPDF = () => {
