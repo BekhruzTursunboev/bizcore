@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>MedUz ERP - BMI Himoya Shpargalkasi</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
+        h2 { color: #2980b9; margin-top: 30px; }
+        ul { margin-bottom: 20px; }
+        li { margin-bottom: 10px; }
+        .highlight { background-color: #f1f8ff; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; font-style: italic; }
+        .qa-box { background-color: #fffaf0; border-left: 4px solid #f39c12; padding: 15px; margin: 20px 0; }
+        strong { color: #2c3e50; }
+    </style>
+</head>
+<body>
+
+    <h1>MedUz ERP - BMI Himoya Shpargalkasi (Cheatsheet)</h1>
+
+    <h2>1. Loyiha Maqsadi va Dolzarbligi</h2>
+    <p><strong>"MedUz ERP"</strong> — bu kasalxona va xususiy klinikalarni to'liq raqamlashtirish uchun mo'ljallangan, bulutli (Cloud) texnologiyalarga asoslangan zamonaviy boshqaruv tizimidir.</p>
+    <ul>
+        <li><strong>Asosiy maqsad:</strong> Qog'ozbozlikni yo'q qilish. Bemorlar, navbatlar, xodimlar va moliya tushumlarini yagona, shaffof tizim orqali avtomatlashtirilgan holda boshqarish.</li>
+    </ul>
+
+    <h2>2. Tizim Arxitekturasi (Qanday qurilgan?)</h2>
+    <p><em>Ushbu loyihaning eng katta ilmiy va amaliy yutug'i — u odatiy Monolit emas, balki yirik IT kompaniyalardek <strong>Mikroservislar arxitekturasi (Microservices Architecture)</strong> asosida qurilganligidir.</em></p>
+    
+    <p>Backend bir-biri bilan TCP transport orqali ishlovchi <strong>5 ta mustaqil xizmatga</strong> bo'lingan:</p>
+    <ol>
+        <li><strong>API Gateway:</strong> Barcha so'rovlarni qabul qilib, kerakli xizmatlarga xavfsiz yo'naltiradi.</li>
+        <li><strong>Patient Service:</strong> Bemorlarning ma'lumotlari va kasallik tarixini qayta ishlaydi.</li>
+        <li><strong>Appointment Service:</strong> Shifokor qabullariga navbatga yozilishni nazorat qiladi.</li>
+        <li><strong>Staff Service:</strong> Klinika xodimlari va ularning lavozimlarini boshqaradi.</li>
+        <li><strong>Billing Service:</strong> To'lovlar, qarzlar va kassa tushumlarini hisoblaydi.</li>
+    </ol>
+
+    <div class="highlight">
+        <strong>Asosiy Argument (Komissiyaga):</strong> "Mikroservis arxitekturasining afzalligi shuki, agar Moliya (Billing) serverida nosozlik chiqsa ham, butun tizim qotib qolmaydi. Bemorlarni ro'yxatga olish yoki navbatga yozish ishlashda davom etaveradi. Bu 24/7 barqaror ishlashni ta'minlaydi."
+    </div>
+
+    <h2>3. Texnologiyalar Steki (Nimalardan foydalanilgan?)</h2>
+    <ul>
+        <li><strong>Frontend:</strong> <strong>Vite</strong> va <strong>React.js</strong> (yuqori tezlik uchun). Dizayn uchun <strong>Material-UI (MUI)</strong>, jonli grafiklar uchun <strong>Recharts</strong>.</li>
+        <li><strong>Backend:</strong> <strong>NestJS</strong> freymvorki (TypeScript va RxJS asosida).</li>
+        <li><strong>Ma'lumotlar bazasi:</strong> <strong>CockroachDB</strong> (Yuqori yuklanishlarga mo'ljallangan taqsimlangan SQL baza).</li>
+        <li><strong>Infratuzilma:</strong> <strong>Docker</strong> va <strong>Docker Compose</strong>, frontend xostingi uchun <strong>Vercel</strong>.</li>
+    </ul>
+
+    <h2>4. Loyihaning O'ziga Xosligi va Universalligi</h2>
+    <ul>
+        <li><strong>Gibrid baza (<code>safeApi</code> texnologiyasi):</strong> Dastur avval lokal serverga ulanadi. Agar u o'chiq bo'lsa (masalan, telefondan kirganda), tizim xato bermasdan avtomatik <strong>Global Cloud JSON DB</strong> ga ulanadi. Ma'lumotlar barcha qurilmalarda uzilishlarsiz sinxronlashadi.</li>
+        <li><strong>Dinamik UI:</strong> "Bemorga navbat olish" bo'limida tizim avtomat ravishda faqat "Shifokor" lavozimidagi xodimlarnigina ko'rsatadi (Bog'langan ma'lumotlar isboti).</li>
+        <li><strong>Mahalliylashtirish:</strong> Pul aylanmasi dollarda emas, O'zbek so'mida yuritiladi va mingliklarga ajratiladi (<code>1 000 000 so'm</code>).</li>
+        <li><strong>PDF Hisobotlar:</strong> Qilingan to'lovlar, qarzdorliklar va bemor ro'yxatlarini bitta tugma bilan <strong>PDF shaklida chop etish</strong> (Export to PDF) xususiyati mavjud.</li>
+    </ul>
+
+    <h2>5. Himoyada Kutiladigan Savollarga Javoblar</h2>
+
+    <div class="qa-box">
+        <p><strong>Savol: Nega standart PostgreSQL emas, CockroachDB ishlatdingiz?</strong></p>
+        <p><strong>Javob:</strong> "CockroachDB PostgreSQL'ga o'xshash, lekin u taqsimlangan va HighLoad tizimlar uchun yozilgan. Agar klinika kelajakda viloyatlarda filial ochsa, CockroachDB serverlarni bir-biriga bog'lab, ma'lumotlarni hech qanday yo'qotishlarsiz yagona bazada saqlash imkonini beradi."</p>
+    </div>
+
+    <div class="qa-box">
+        <p><strong>Savol: Bu tizimni amaliyotda (haqiqiy poliklinikaga) joriy qilsa bo'ladimi?</strong></p>
+        <p><strong>Javob:</strong> "Albatta. Tizim poydevori 100% tayyor. Unga faqat tibbiy retseptlar (dori-darmon) moduli va bemorlarga SMS eslatma uchun Telegram bot ulasak, loyihani bemalol xususiy klinikalarga tijoriy maqsadda joriy etish mumkin."</p>
+    </div>
+
+</body>
+</html>
