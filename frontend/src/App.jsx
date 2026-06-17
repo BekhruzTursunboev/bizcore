@@ -5,8 +5,8 @@ import { ThemeProvider, createTheme, CssBaseline, Box, Drawer, AppBar, Toolbar, 
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
 import toast, { Toaster } from 'react-hot-toast';
-import jsPDF from 'jspdf';
-import 'jspdf-autotable';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 // ICONS
 import DashboardOutlinedIcon from '@mui/icons-material/DashboardOutlined';
@@ -860,7 +860,7 @@ const Staff = () => {
     const doc = new jsPDF();
     doc.text("Klinika Xodimlari", 14, 15);
     const tableData = staff.map(s => [s.fullName, s.role, s.department, s.phone, s.status]);
-    doc.autoTable({ head: [["F.I.O", "Lavozim", "Bo'lim", "Telefon", "Holati"]], body: tableData, startY: 20 });
+    autoTable(doc, { head: [["F.I.O", "Lavozim", "Bo'lim", "Telefon", "Holati"]], body: tableData, startY: 20 });
     doc.save(`Xodimlar.pdf`); toast.success("PDF Yuklab olindi!");
   };
 
@@ -966,7 +966,7 @@ const Billing = () => {
     const doc = new jsPDF();
     doc.text("Moliya Tushumlari", 14, 15);
     const tableData = bills.map(b => [b.patientName, b.serviceName, formatCurrency(b.amount), b.date, b.status]);
-    doc.autoTable({ head: [["Mijoz/Bemor", "Xizmat turi", "Summa", "Sana", "Holat"]], body: tableData, startY: 20 });
+    autoTable(doc, { head: [["Mijoz/Bemor", "Xizmat turi", "Summa", "Sana", "Holat"]], body: tableData, startY: 20 });
     doc.save(`Moliya.pdf`); toast.success("PDF Yuklab olindi!");
   };
 
