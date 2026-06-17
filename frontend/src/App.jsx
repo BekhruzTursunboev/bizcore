@@ -681,6 +681,16 @@ const Appointments = ({ loggedInUser }) => {
         toast.success("✅ Bemorni navbatga olish yakunlandi!", { style: { fontWeight: 'bold' }}); 
         
         try {
+          const nameParts = formData.patientName.trim().split(' ');
+          await safeApi('POST', 'patients', null, {
+            firstName: nameParts[0] || 'Noma\'lum',
+            lastName: nameParts.slice(1).join(' ') || '',
+            doctorName: formData.doctorName,
+            status: 'Kuzatuvda',
+            reason: formData.reason || '',
+            phone: ''
+          });
+          
           await safeApi('POST', 'billing', null, {
             patientName: formData.patientName,
             serviceName: 'Shifokor ko\'rigi',
@@ -689,7 +699,7 @@ const Appointments = ({ loggedInUser }) => {
             status: 'Qarzdorlik'
           });
           toast.success("🤖 Avtomatik jarayon: Kassada to'lov hujjati shakllantirildi!", { duration: 6000, icon: '💸', style: { border: '1px solid #10b981', padding: '16px', color: '#10b981' } });
-        } catch(e) { console.error("Billing error:", e); }
+        } catch(e) { console.error("Auto-sync error:", e); }
       }
       setOpen(false); fetchAppointments(); 
     } catch(err) { toast.error("Xatolik: " + (err.response?.data?.message || err.message || "Ulanishda xato")); }
@@ -895,8 +905,8 @@ const Billing = () => {
   }
 
   const handleSubmit = async () => { 
-    if (!formData.patientName?.trim() || !formData.serviceName) return toast.error("Bemor ismi va xizmat turini kiriting!");
-    if (Number(formData.amount) <= 0) return toast.error("Summa 0 dan katta bo'lishi shart!");
+    if (!formData.patientName?.trim() || !formData.serviceName) return toast.error("Barcha maydonlarni to'ldiring!");
+    if (Number(formData.amount) < 0) return toast.error("Kechirasiz, to'lov summasi manfiy bo'lishi mumkin emas!");
     try {
       if(editId) { await safeApi('PUT', 'billing', editId, formData); toast.success("Yangilandi"); }
       else { await safeApi('POST', 'billing', null, formData); toast.success("Qo'shildi"); }
