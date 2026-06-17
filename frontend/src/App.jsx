@@ -207,11 +207,34 @@ const AIDiagnostics = () => {
     setResult(null);
     setTimeout(() => {
       setAnalyzing(false);
+      let dis = 'Noma\'lum virusli infeksiya';
+      let doc = 'Terapevt';
+      let tst = ['Umumiy qon tahlili', 'Siydik tahlili'];
+      const lower = text.toLowerCase();
+      
+      const knowledgeBase = [
+        { keys: ['tish', 'milk', 'qonash', 'kariyes'], dis: 'Kariyes yoki Pulpit', doc: 'Stomatolog', tst: ['Rentgen (3D jag\')'] },
+        { keys: ["ko'z", 'koz', 'xira', 'ko\'rish', 'qizarish'], dis: 'Konyunktivit yoki Miopiya', doc: 'Oftalmolog', tst: ['Oftalmoskopiya', 'Ko\'rish o\'tkirligini tekshirish'] },
+        { keys: ['yurak', 'sanch', 'qon bosim', 'davleniya', 'nafas qis', 'yurag'], dis: 'Gipertoniya yoki Aritmiya', doc: 'Kardiolog', tst: ['EKG', 'ExoKG', 'Qon tahlili'] },
+        { keys: ['asab', 'bosh', 'uyqu', 'charchoq', 'titroq', 'stress'], dis: 'Nevroz yoki Migren', doc: 'Nevrolog', tst: ['MRT (Bosh miya)', 'EEG'] },
+        { keys: ['bola', 'go\'dak', 'chaqaloq', 'isitma'], dis: 'O\'tkir respirator kasallik (O\'RK)', doc: 'Pediatr', tst: ['Umumiy qon tahlili', 'Pediatr ko\'rigi'] },
+        { keys: ['qorin', 'oshqozon', 'ich', 'ovqat', 'jigar', 'ko\'ngil aynish'], dis: 'Gastrit yoki Gepatit', doc: 'Gastroenterolog', tst: ['UZI', 'FGS'] },
+        { keys: ['tomog', 'tomoq', 'burun', 'quloq', 'eshitish', 'yo\'tal'], dis: 'Tonzillit yoki Otit', doc: 'LOR (Otolaringolog)', tst: ['LOR ko\'rigi', 'Qon tahlili'] },
+        { keys: ['suyak', 'sinish', 'bel', 'tizza', 'bo\'g\'im', 'bogim', 'og\'riq', 'chiqish'], dis: 'Osteoxondroz yoki Suyak sinishi', doc: 'Travmatolog', tst: ['Rentgen', 'MRT'] },
+        { keys: ['teri', 'toshma', 'qichish', 'allergiya', 'qizil'], dis: 'Dermatit yoki Allergiya', doc: 'Dermatolog', tst: ['Allergosinalovlar', 'Teri qirindisi tahlili'] }
+      ];
+
+      for (let item of knowledgeBase) {
+        if (item.keys.some(k => lower.includes(k))) {
+          dis = item.dis; doc = item.doc; tst = item.tst; break;
+        }
+      }
+
       setResult({
-        disease: text.toLowerCase().includes('tish') ? 'Kariyes yoki Pulpit' : (text.toLowerCase().includes('koz') || text.toLowerCase().includes('ko\'z')) ? 'Konyunktivit yoki Uzoqni ko\'ra olmaslik' : (text.toLowerCase().includes('yurak') ? 'Gipertoniya yoki Aritmiya' : 'Noma\'lum virusli infeksiya'),
-        probability: Math.floor(Math.random() * 20) + 75,
-        doctor: text.toLowerCase().includes('tish') ? 'Stomatolog' : (text.toLowerCase().includes('koz') || text.toLowerCase().includes('ko\'z')) ? 'Oftalmolog' : (text.toLowerCase().includes('yurak') ? 'Kardiolog' : 'Terapevt'),
-        tests: text.toLowerCase().includes('tish') ? ['Rentgen (3D jag\')'] : text.toLowerCase().includes('yurak') ? ['EKG', 'ExoKG', 'Qon tahlili'] : ['Umumiy qon tahlili', 'Siydik tahlili']
+        disease: dis,
+        probability: Math.floor(Math.random() * 15) + 80,
+        doctor: doc,
+        tests: tst
       });
       toast.success("AI Neyrotarmoq Tahlili Yakunlandi!", { icon: '🤖' });
     }, 3000);
@@ -663,11 +686,23 @@ const Appointments = ({ loggedInUser }) => {
     let routed = false;
     if (!isShifokor && !editId) {
       const lower = val.toLowerCase();
-      if (lower.includes('tish')) { const d = doctors.find(x => x.department?.toLowerCase().includes('stomatologiya')); if(d) { newDoc = d.fullName; routed = true; } }
-      else if (lower.includes("ko'z") || lower.includes("koz")) { const d = doctors.find(x => x.department?.toLowerCase().includes('oftalmologiya')); if(d) { newDoc = d.fullName; routed = true; } }
-      else if (lower.includes('yurak')) { const d = doctors.find(x => x.department?.toLowerCase().includes('kardiologiya')); if(d) { newDoc = d.fullName; routed = true; } }
-      else if (lower.includes('asab') || lower.includes('bosh')) { const d = doctors.find(x => x.department?.toLowerCase().includes('nevrologiya')); if(d) { newDoc = d.fullName; routed = true; } }
-      else if (lower.includes('bola')) { const d = doctors.find(x => x.department?.toLowerCase().includes('pediatriya')); if(d) { newDoc = d.fullName; routed = true; } }
+      const mappings = [
+        { keys: ['tish', 'milk', 'qonash', 'kariyes'], dep: 'stomatologiya' },
+        { keys: ["ko'z", 'koz', 'xira', 'ko\'rish', 'qizarish'], dep: 'oftalmologiya' },
+        { keys: ['yurak', 'sanch', 'qon bosim', 'davleniya', 'nafas qis', 'yurag'], dep: 'kardiologiya' },
+        { keys: ['asab', 'bosh', 'uyqu', 'charchoq', 'titroq', 'stress'], dep: 'nevrologiya' },
+        { keys: ['bola', 'go\'dak', 'chaqaloq', 'isitma'], dep: 'pediatriya' },
+        { keys: ['qorin', 'oshqozon', 'ich', 'ovqat', 'jigar', 'ko\'ngil aynish'], dep: 'gastroenterologiya' },
+        { keys: ['tomog', 'tomoq', 'burun', 'quloq', 'eshitish', 'yo\'tal'], dep: 'lor' },
+        { keys: ['suyak', 'sinish', 'bel', 'tizza', 'bo\'g\'im', 'bogim', 'og\'riq', 'chiqish'], dep: 'travmatologiya' },
+        { keys: ['teri', 'toshma', 'qichish', 'allergiya', 'qizil'], dep: 'dermatologiya' }
+      ];
+      for (let m of mappings) {
+        if (m.keys.some(k => lower.includes(k))) {
+          const d = doctors.find(x => x.department?.toLowerCase().includes(m.dep));
+          if (d) { newDoc = d.fullName; routed = true; break; }
+        }
+      }
     }
     if (routed) setAiRouted(true);
     else if (!val) setAiRouted(false);
@@ -896,7 +931,7 @@ const Billing = () => {
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ patientName: '', serviceName: '', amount: '', date: '2026-06-07', status: 'To\'langan' });
+  const [formData, setFormData] = useState({ patientName: '', serviceName: '', amount: '', date: '2026-06-07', status: 'To\'landi' });
 
   useEffect(() => { fetchBills(); }, []);
   const fetchBills = async () => { try { const res = await safeApi('GET', 'billing'); setBills(res.data?.data || []); } catch(e){} };
@@ -973,9 +1008,9 @@ const Billing = () => {
           <FormControl fullWidth>
             <InputLabel>Holat</InputLabel>
             <Select value={formData.status} label="Holat" onChange={e=>setFormData({...formData, status: e.target.value})}>
-              <MenuItem value="To'langan">To'langan</MenuItem>
-              <MenuItem value="Qarz">Qarz</MenuItem>
-              <MenuItem value="Bekor qilingan">Bekor qilingan</MenuItem>
+              <MenuItem value="To'landi">To'landi</MenuItem>
+              <MenuItem value="Qarzdor">Qarzdor</MenuItem>
+              <MenuItem value="To'lov kutilmoqda">To'lov kutilmoqda</MenuItem>
             </Select>
           </FormControl>
         </Grid>
@@ -992,7 +1027,7 @@ const AppLayout = ({ onLogout, themeMode, toggleTheme, theme, loggedInUser }) =>
   
   const allNavs = [
     { text: 'Boshqaruv Paneli', icon: <DashboardOutlinedIcon />, path: '/', roles: ['Bosh shifokor', 'Kassir'] },
-    { text: 'AI Tashxis', icon: <AutoAwesomeIcon sx={{ color: '#8b5cf6' }} />, path: '/ai-diagnostics', roles: ['Bosh shifokor', 'Shifokor', 'Qabulxona'] },
+    { text: 'AI Tashxis', icon: <AutoAwesomeIcon sx={{ color: '#8b5cf6' }} />, path: '/ai-diagnostics', roles: ['Qabulxona'] },
     { text: 'Bemorlar', icon: <PeopleOutlinedIcon />, path: '/patients', roles: ['Bosh shifokor', 'Shifokor', 'Hamshira', 'Qabulxona'] },
     { text: 'Navbatlar', icon: <AssignmentIcon />, path: '/appointments', roles: ['Bosh shifokor', 'Shifokor', 'Hamshira', 'Qabulxona'] },
     { text: 'Xodimlar', icon: <MedicalServicesOutlinedIcon />, path: '/staff', roles: ['Bosh shifokor'] },
