@@ -213,15 +213,18 @@ const AIDiagnostics = () => {
       const lower = text.toLowerCase();
       
       const knowledgeBase = [
-        { keys: ['tish', 'milk', 'qonash', 'kariyes'], dis: 'Kariyes yoki Pulpit', doc: 'Stomatolog', tst: ['Rentgen (3D jag\')'] },
-        { keys: ["ko'z", 'koz', 'xira', 'ko\'rish', 'qizarish'], dis: 'Konyunktivit yoki Miopiya', doc: 'Oftalmolog', tst: ['Oftalmoskopiya', 'Ko\'rish o\'tkirligini tekshirish'] },
-        { keys: ['yurak', 'sanch', 'qon bosim', 'davleniya', 'nafas qis', 'yurag'], dis: 'Gipertoniya yoki Aritmiya', doc: 'Kardiolog', tst: ['EKG', 'ExoKG', 'Qon tahlili'] },
-        { keys: ['asab', 'bosh', 'uyqu', 'charchoq', 'titroq', 'stress'], dis: 'Nevroz yoki Migren', doc: 'Nevrolog', tst: ['MRT (Bosh miya)', 'EEG'] },
-        { keys: ['bola', 'go\'dak', 'chaqaloq', 'isitma'], dis: 'O\'tkir respirator kasallik (O\'RK)', doc: 'Pediatr', tst: ['Umumiy qon tahlili', 'Pediatr ko\'rigi'] },
-        { keys: ['qorin', 'oshqozon', 'ich', 'ovqat', 'jigar', 'ko\'ngil aynish'], dis: 'Gastrit yoki Gepatit', doc: 'Gastroenterolog', tst: ['UZI', 'FGS'] },
-        { keys: ['tomog', 'tomoq', 'burun', 'quloq', 'eshitish', 'yo\'tal'], dis: 'Tonzillit yoki Otit', doc: 'LOR (Otolaringolog)', tst: ['LOR ko\'rigi', 'Qon tahlili'] },
-        { keys: ['suyak', 'sinish', 'bel', 'tizza', 'bo\'g\'im', 'bogim', 'og\'riq', 'chiqish'], dis: 'Osteoxondroz yoki Suyak sinishi', doc: 'Travmatolog', tst: ['Rentgen', 'MRT'] },
-        { keys: ['teri', 'toshma', 'qichish', 'allergiya', 'qizil'], dis: 'Dermatit yoki Allergiya', doc: 'Dermatolog', tst: ['Allergosinalovlar', 'Teri qirindisi tahlili'] }
+        { keys: ['tish', 't1sh', 'milk', 'qonash', 'kariyes', 'plomba', 'jag', 'jag\'', 'stomatit', 'tishim', 'tishi', 'og\'zi'], dis: 'Kariyes yoki Pulpit', doc: 'Stomatolog', tst: ['Rentgen (3D jag\')'] },
+        { keys: ["ko'z", 'koz', 'ko`z', 'xira', 'ko\'rish', 'qizarish', 'kuz', 'ku\'z', 'oynak', 'linza', 'katarakta', 'glaukoma', 'ko\'zim'], dis: 'Konyunktivit yoki Miopiya', doc: 'Oftalmolog', tst: ['Oftalmoskopiya', 'Ko\'rish o\'tkirligini tekshirish'] },
+        { keys: ['yurak', 'sanch', 'qon bosim', 'davleniya', 'nafas qis', 'yurag', 'yurakda', 'gipertoniya', 'infarkt', 'insult', 'aritmiya'], dis: 'Gipertoniya yoki Aritmiya', doc: 'Kardiolog', tst: ['EKG', 'ExoKG', 'Qon tahlili'] },
+        { keys: ['asab', 'bosh', 'uyqu', 'charchoq', 'titroq', 'stress', 'qaltirash', 'depressiya', 'migren', 'xotira', 'asabim', 'boshim', 'tutqanoq'], dis: 'Nevroz yoki Migren', doc: 'Nevrolog', tst: ['MRT (Bosh miya)', 'EEG'] },
+        { keys: ['bola', 'go\'dak', 'chaqaloq', 'isitma', 'bolam', 'bolada', 'farzandim', 'kichkina', 'emzikli', 'gudak'], dis: 'O\'tkir respirator kasallik (O\'RK)', doc: 'Pediatr', tst: ['Umumiy qon tahlili', 'Pediatr ko\'rigi'] },
+        { keys: ['qorin', 'oshqozon', 'ich', 'ovqat', 'jigar', 'ko\'ngil aynish', 'qusish', 'qornim', 'ichak', 'gastrit', 'gepatit', 'o\'t pufak', 'ot pufak', 'ko\'nglim', 'kongil'], dis: 'Gastrit yoki Gepatit', doc: 'Gastroenterolog', tst: ['UZI', 'FGS'] },
+        { keys: ['tomog', 'tomoq', 'burun', 'quloq', 'eshitish', 'yo\'tal', 'yotal', 'nafas', 'shamollash', 'gripp', 'angina', 'tomog\'im', 'yutingan', 'hid'], dis: 'Tonzillit yoki Otit', doc: 'LOR (Otolaringolog)', tst: ['LOR ko\'rigi', 'Qon tahlili'] },
+        { keys: ['suyak', 'sinish', 'bel', 'tizza', 'bo\'g\'im', 'bogim', 'og\'riq', 'chiqish', 'gips', 'umurtqa', 'grija', 'pay', 'cho\'zilishi', 'chozilishi', 'oyog', 'oyoq', 'qo\'l', 'qol', 'singan'], dis: 'Osteoxondroz yoki Suyak sinishi', doc: 'Travmatolog', tst: ['Rentgen', 'MRT'] },
+        { keys: ['teri', 'toshma', 'qichish', 'allergiya', 'qizil', 'yara', 'husnbuzar', 'ugri', 'tushish', 'soch', 'qazg\'oq', 'qichoma', 'temiratki'], dis: 'Dermatit yoki Allergiya', doc: 'Dermatolog', tst: ['Allergosinalovlar', 'Teri qirindisi tahlili'] },
+        { keys: ['homila', 'tug\'ruq', 'ayol', 'hayz', 'bachadon', 'ginekolog', 'jinsiy', 'tugish', 'homilador', 'bola tashlash'], dis: 'Ginekologik yallig\'lanish', doc: 'Ginekolog', tst: ['UZI (Kichik chanoq)', 'Qon tahlili'] },
+        { keys: ['buyrak', 'siydik', 'qovuq', 'siydikda', 'prostatit', 'buyrag', 'siyish'], dis: 'Piyelonefrit yoki Sistit', doc: 'Urolog', tst: ['UZI (Buyraklar)', 'Siydik umumiy tahlili'] },
+        { keys: ['shish', 'o\'sma', 'rak', 'kista', 'onkologiya', 'limfa', 'tugun', 'saraton'], dis: 'Yaxshi/Yomon sifatli o\'sma', doc: 'Onkolog', tst: ['MRT', 'Biopsiya', 'Onkomarkerlar'] }
       ];
 
       for (let item of knowledgeBase) {
@@ -687,15 +690,18 @@ const Appointments = ({ loggedInUser }) => {
     if (!isShifokor && !editId) {
       const lower = val.toLowerCase();
       const mappings = [
-        { keys: ['tish', 'milk', 'qonash', 'kariyes'], dep: 'stomatologiya' },
-        { keys: ["ko'z", 'koz', 'xira', 'ko\'rish', 'qizarish'], dep: 'oftalmologiya' },
-        { keys: ['yurak', 'sanch', 'qon bosim', 'davleniya', 'nafas qis', 'yurag'], dep: 'kardiologiya' },
-        { keys: ['asab', 'bosh', 'uyqu', 'charchoq', 'titroq', 'stress'], dep: 'nevrologiya' },
-        { keys: ['bola', 'go\'dak', 'chaqaloq', 'isitma'], dep: 'pediatriya' },
-        { keys: ['qorin', 'oshqozon', 'ich', 'ovqat', 'jigar', 'ko\'ngil aynish'], dep: 'gastroenterologiya' },
-        { keys: ['tomog', 'tomoq', 'burun', 'quloq', 'eshitish', 'yo\'tal'], dep: 'lor' },
-        { keys: ['suyak', 'sinish', 'bel', 'tizza', 'bo\'g\'im', 'bogim', 'og\'riq', 'chiqish'], dep: 'travmatologiya' },
-        { keys: ['teri', 'toshma', 'qichish', 'allergiya', 'qizil'], dep: 'dermatologiya' }
+        { keys: ['tish', 't1sh', 'milk', 'qonash', 'kariyes', 'plomba', 'jag', 'jag\'', 'stomatit', 'tishim', 'tishi', 'og\'zi'], dep: 'stomatologiya' },
+        { keys: ["ko'z", 'koz', 'ko`z', 'xira', 'ko\'rish', 'qizarish', 'kuz', 'ku\'z', 'oynak', 'linza', 'katarakta', 'glaukoma', 'ko\'zim'], dep: 'oftalmologiya' },
+        { keys: ['yurak', 'sanch', 'qon bosim', 'davleniya', 'nafas qis', 'yurag', 'yurakda', 'gipertoniya', 'infarkt', 'insult', 'aritmiya'], dep: 'kardiologiya' },
+        { keys: ['asab', 'bosh', 'uyqu', 'charchoq', 'titroq', 'stress', 'qaltirash', 'depressiya', 'migren', 'xotira', 'asabim', 'boshim', 'tutqanoq'], dep: 'nevrologiya' },
+        { keys: ['bola', 'go\'dak', 'chaqaloq', 'isitma', 'bolam', 'bolada', 'farzandim', 'kichkina', 'emzikli', 'gudak'], dep: 'pediatriya' },
+        { keys: ['qorin', 'oshqozon', 'ich', 'ovqat', 'jigar', 'ko\'ngil aynish', 'qusish', 'qornim', 'ichak', 'gastrit', 'gepatit', 'o\'t pufak', 'ot pufak', 'ko\'nglim', 'kongil'], dep: 'gastroenterologiya' },
+        { keys: ['tomog', 'tomoq', 'burun', 'quloq', 'eshitish', 'yo\'tal', 'yotal', 'nafas', 'shamollash', 'gripp', 'angina', 'tomog\'im', 'yutingan', 'hid'], dep: 'lor' },
+        { keys: ['suyak', 'sinish', 'bel', 'tizza', 'bo\'g\'im', 'bogim', 'og\'riq', 'chiqish', 'gips', 'umurtqa', 'grija', 'pay', 'cho\'zilishi', 'chozilishi', 'oyog', 'oyoq', 'qo\'l', 'qol', 'singan'], dep: 'travmatologiya' },
+        { keys: ['teri', 'toshma', 'qichish', 'allergiya', 'qizil', 'yara', 'husnbuzar', 'ugri', 'tushish', 'soch', 'qazg\'oq', 'qichoma', 'temiratki'], dep: 'dermatologiya' },
+        { keys: ['homila', 'tug\'ruq', 'ayol', 'hayz', 'bachadon', 'ginekolog', 'jinsiy', 'tugish', 'homilador', 'bola tashlash'], dep: 'ginekologiya' },
+        { keys: ['buyrak', 'siydik', 'qovuq', 'siydikda', 'prostatit', 'buyrag', 'siyish'], dep: 'urologiya' },
+        { keys: ['shish', 'o\'sma', 'rak', 'kista', 'onkologiya', 'limfa', 'tugun', 'saraton'], dep: 'onkologiya' }
       ];
       for (let m of mappings) {
         if (m.keys.some(k => lower.includes(k))) {
