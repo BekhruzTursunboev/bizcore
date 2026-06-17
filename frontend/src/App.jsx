@@ -265,7 +265,7 @@ const AIDiagnostics = () => {
   );
 };
 
-const Dashboard = ({ theme }) => {
+const Dashboard = ({ theme, loggedInUser }) => {
   const [patients, setPatients] = useState([]);
   const [bills, setBills] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -289,6 +289,9 @@ const Dashboard = ({ theme }) => {
   };
 
   const totalRevenue = bills.reduce((acc, curr) => acc + (Number(curr.amount) || 0), 0);
+  
+  const filteredAppointments = loggedInUser?.role === 'Shifokor' ? appointments.filter(a => a.doctorName === loggedInUser.fullName) : appointments;
+  const filteredPatients = loggedInUser?.role === 'Shifokor' ? patients.filter(p => p.doctorName === loggedInUser.fullName) : patients;
   
   const chartData = [
     { name: 'Dush', daromad: totalRevenue * 0.1, navbat: appointments.length + 5 },
@@ -315,8 +318,8 @@ const Dashboard = ({ theme }) => {
       <Box sx={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
         <Typography variant="h4" sx={{ fontWeight: 700 }}>Asosiy Boshqaruv (Command Center)</Typography>
       </Box>
-      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 3' } }}><StatCard title="Jami Bemorlar" value={patients.length} trend={12.5} subtitle="Barcha vaqtlar" icon={<PeopleOutlinedIcon fontSize="large"/>} theme={theme} /></Box>
-      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 3' } }}><StatCard title="Navbatlar (Appointments)" value={appointments.length || 1} trend={3.2} subtitle="Bugungi qabullar" icon={<AssignmentIndIcon fontSize="large"/>} theme={theme} /></Box>
+      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 3' } }}><StatCard title="Jami Bemorlar" value={filteredPatients.length} trend={12.5} subtitle="Barcha vaqtlar" icon={<PeopleOutlinedIcon fontSize="large"/>} theme={theme} /></Box>
+      <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 3' } }}><StatCard title="Navbatlar (Appointments)" value={filteredAppointments.length} trend={3.2} subtitle="Bugungi qabullar" icon={<AssignmentIndIcon fontSize="large"/>} theme={theme} /></Box>
       <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 3' } }}><StatCard title="Kassa Tushumi" value={formatCurrency(totalRevenue)} trend={8.4} subtitle="Billing DB'dan olingan" icon={<AttachMoneyIcon fontSize="large"/>} theme={theme} /></Box>
       <Box sx={{ gridColumn: { xs: '1 / -1', md: 'span 3' } }}><StatCard title="AI Avtomatizatsiya" value={(appointments.length * 2) + 14} trend={84.2} subtitle="Bugun tejalgan daqiqalar" icon={<SmartToyIcon fontSize="large"/>} theme={theme} /></Box>
       
@@ -893,7 +896,7 @@ const Billing = () => {
   const [search, setSearch] = useState('');
   const [open, setOpen] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ patientName: '', serviceName: '', amount: 0, date: '2026-06-07', status: 'To\'langan' });
+  const [formData, setFormData] = useState({ patientName: '', serviceName: '', amount: '', date: '2026-06-07', status: 'To\'langan' });
 
   useEffect(() => { fetchBills(); }, []);
   const fetchBills = async () => { try { const res = await safeApi('GET', 'billing'); setBills(res.data?.data || []); } catch(e){} };
@@ -1034,7 +1037,7 @@ const AppLayout = ({ onLogout, themeMode, toggleTheme, theme, loggedInUser }) =>
       <Box component="main" sx={{ flexGrow: 1, p: { xs: 2, md: 4 }, pt: { xs: 10, md: 12 }, width: { xs: '100%', md: `calc(100% - ${drawerWidth}px)` }, overflowX: 'hidden' }}>
         <Container maxWidth="xl" disableGutters sx={{ width: '100%' }}>
           <Routes>
-            <Route path="/" element={<Dashboard theme={theme}/>} />
+            <Route path="/" element={<Dashboard theme={theme} loggedInUser={loggedInUser}/>} />
             <Route path="/ai-diagnostics" element={<AIDiagnostics />} />
             <Route path="/patients" element={<Patients loggedInUser={loggedInUser} />} />
             <Route path="/appointments" element={<Appointments loggedInUser={loggedInUser}/>} />
