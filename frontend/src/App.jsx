@@ -319,7 +319,7 @@ const Dashboard = ({ theme, loggedInUser }) => {
   const filteredAppointments = loggedInUser?.role === 'Shifokor' ? appointments.filter(a => a.doctorName === loggedInUser.fullName) : appointments;
   const filteredPatients = loggedInUser?.role === 'Shifokor' ? patients.filter(p => p.doctorName === loggedInUser.fullName) : patients;
   
-  const chartData = [
+    const chartData = [
     { name: 'Dush', daromad: totalRevenue * 0.1, navbat: appointments.length + 5 },
     { name: 'Sesh', daromad: totalRevenue * 0.15, navbat: appointments.length + 8 },
     { name: 'Chor', daromad: totalRevenue * 0.2, navbat: appointments.length + 3 },
@@ -329,8 +329,9 @@ const Dashboard = ({ theme, loggedInUser }) => {
   const pieData = [
     { name: 'Kuzatuvda', value: patients.filter(p => (p.status || '').toLowerCase().includes('kuzatuv')).length },
     { name: 'Sog\'aygan', value: patients.filter(p => (p.status || '').toLowerCase().includes('sog')).length },
+    { name: 'Og\'ir', value: patients.filter(p => (p.status || '').toLowerCase().includes('og')).length }
   ];
-  const COLORS = ['#3b82f6', '#10b981'];
+  const COLORS = ['#3b82f6', '#10b981', '#ef4444'];
 
   const staffDeps = staff.reduce((acc, curr) => {
     const dep = curr.department || 'Boshqa';
