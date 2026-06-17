@@ -437,17 +437,47 @@ const Appointments = ({ loggedInUser }) => {
     } catch(e){} 
   };
   
+  const isShifokor = loggedInUser?.role === 'Shifokor';
+
   const handleOpen = (a = null) => {
     if (a) { setEditId(a.id); setFormData({ patientName: a.patientName, doctorName: a.doctorName, date: a.date, time: a.time, reason: a.reason, status: a.status }); }
-    else { setEditId(null); setFormData({ patientName: '', doctorName: '', date: '2026-06-08', time: '10:00', reason: '', status: 'Tasdiqlangan' }); }
+    else { setEditId(null); setFormData({ patientName: '', doctorName: isShifokor ? loggedInUser.fullName : '', date: '2026-06-08', time: '10:00', reason: '', status: 'Tasdiqlangan' }); }
     setOpen(true);
   }
+
+  const handleReasonChange = (e) => {
+    const val = e.target.value;
+    let newDoc = formData.doctorName;
+    if (!isShifokor && !editId) {
+      const lower = val.toLowerCase();
+      if (lower.includes('tish')) { const d = doctors.find(x => x.department?.toLowerCase().includes('stomatologiya')); if(d) newDoc = d.fullName; }
+      else if (lower.includes("ko'z") || lower.includes("koz")) { const d = doctors.find(x => x.department?.toLowerCase().includes('oftalmologiya')); if(d) newDoc = d.fullName; }
+      else if (lower.includes('yurak')) { const d = doctors.find(x => x.department?.toLowerCase().includes('kardiologiya')); if(d) newDoc = d.fullName; }
+      else if (lower.includes('asab') || lower.includes('bosh')) { const d = doctors.find(x => x.department?.toLowerCase().includes('nevrologiya')); if(d) newDoc = d.fullName; }
+      else if (lower.includes('bola')) { const d = doctors.find(x => x.department?.toLowerCase().includes('pediatriya')); if(d) newDoc = d.fullName; }
+    }
+    setFormData({ ...formData, reason: val, doctorName: newDoc });
+  };
 
   const handleSubmit = async () => { 
     if (!formData.patientName?.trim() || !formData.doctorName || !formData.date || !formData.time) return toast.error("Barcha maydonlarni to'ldiring!");
     try {
       if (editId) { await safeApi('PUT', 'appointments', editId, formData); toast.success("Yangilandi"); }
-      else { await safeApi('POST', 'appointments', null, formData); toast.success("Navbat yaratildi"); }
+      else { 
+        await safeApi('POST', 'appointments', null, formData); 
+        toast.success("Navbat yaratildi"); 
+        
+        try {
+          await safeApi('POST', 'billing', null, {
+            patientName: formData.patientName,
+            serviceName: 'Shifokor ko\'rigi',
+            amount: 50000,
+            date: formData.date,
+            status: 'Qarzdorlik'
+          });
+          toast.success("Kassaga avtomatik hisob yuborildi!");
+        } catch(e) { console.error("Billing error:", e); }
+      }
       setOpen(false); fetchAppointments(); 
     } catch(err) { toast.error("Xatolik: " + (err.response?.data?.message || err.message || "Ulanishda xato")); }
   };
@@ -496,7 +526,7 @@ const Appointments = ({ loggedInUser }) => {
       <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth><DialogTitle>{editId ? "Tahrirlash" : "Navbat Qo'shish"}</DialogTitle><DialogContent dividers><Grid container spacing={3} sx={{ pt: 1 }}>
         <Grid item xs={12} sm={6}><TextField fullWidth label="Bemor Ismi" value={formData.patientName} onChange={e=>setFormData({...formData, patientName: e.target.value})} /></Grid>
         <Grid item xs={12} sm={6}>
-          <FormControl fullWidth>
+          <FormControl fullWidth disabled={isShifokor}>
             <InputLabel>Shifokor</InputLabel>
             <Select value={formData.doctorName} label="Shifokor" onChange={e=>setFormData({...formData, doctorName: e.target.value})}>
                 {doctors.map(d => <MenuItem key={d.id || d.fullName} value={d.fullName}>{d.fullName}</MenuItem>)}
@@ -506,7 +536,9 @@ const Appointments = ({ loggedInUser }) => {
         </Grid>
         <Grid item xs={12} sm={6}><TextField fullWidth type="date" label="Sana" value={formData.date} onChange={e=>setFormData({...formData, date: e.target.value})} InputLabelProps={{shrink: true}} /></Grid>
         <Grid item xs={12} sm={6}><TextField fullWidth type="time" label="Vaqt" value={formData.time} onChange={e=>setFormData({...formData, time: e.target.value})} InputLabelProps={{shrink: true}} /></Grid>
-        <Grid item xs={12}><TextField fullWidth label="Sabab" value={formData.reason} onChange={e=>setFormData({...formData, reason: e.target.value})} /></Grid>
+        <Grid item xs={12}>
+          <TextField fullWidth label="Sabab / Shikoyat" value={formData.reason} onChange={handleReasonChange} placeholder="Masalan: Tishim og'riyapti..." />
+        </Grid>
         <Grid item xs={12}>
           <FormControl fullWidth>
             <InputLabel>Holat</InputLabel>
