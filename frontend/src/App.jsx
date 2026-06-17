@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BrowserRouter, Routes, Route, useNavigate, useLocation } from 'react-router-dom';
 import axios from 'axios';
-import { ThemeProvider, createTheme, CssBaseline, Box, Drawer, AppBar, Toolbar, List, Typography, ListItem, ListItemButton, ListItemIcon, ListItemText, Container, Grid, Card, CardContent, Chip, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, InputAdornment, Avatar, Divider, FormControl, InputLabel, Select, MenuItem, LinearProgress, CircularProgress, Fade, Grow } from '@mui/material';
+import { ThemeProvider, createTheme, CssBaseline, Box, Drawer, AppBar, Toolbar, List, Typography, ListItem, ListItemButton, ListItemIcon, ListItemText, Container, Grid, Card, CardContent, Chip, IconButton, Button, Dialog, DialogTitle, DialogContent, DialogActions, TextField, InputAdornment, Avatar, Divider, FormControl, InputLabel, Select, MenuItem, LinearProgress, CircularProgress, Fade, Grow, Tabs, Tab } from '@mui/material';
 import { LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, Legend } from 'recharts';
 import { DataGrid, GridActionsCellItem, GridToolbar } from '@mui/x-data-grid';
 import toast, { Toaster } from 'react-hot-toast';
@@ -30,6 +30,9 @@ import MemoryIcon from '@mui/icons-material/Memory';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import SmartToyIcon from '@mui/icons-material/SmartToy';
+import HistoryIcon from '@mui/icons-material/History';
+import DescriptionIcon from '@mui/icons-material/Description';
+import MedicationIcon from '@mui/icons-material/Medication';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 const FALLBACK_DB_URL = 'https://api.restful-api.dev/objects/ff8081819d82fab6019ea6564a494eb4';
@@ -397,24 +400,36 @@ const Dashboard = ({ theme }) => {
 const Patients = () => {
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
+  const [appointments, setAppointments] = useState([]);
+  const [bills, setBills] = useState([]);
   const [search, setSearch] = useState('');
   const [openDialog, setOpenDialog] = useState(false);
+  const [openEHR, setOpenEHR] = useState(false);
   const [editId, setEditId] = useState(null);
-  const [formData, setFormData] = useState({ firstName: '', lastName: '', doctorName: '', status: 'Kuzatuvda', appointmentTime: '09:00' });
+  const [selectedPatient, setSelectedPatient] = useState(null);
+  const [tabValue, setTabValue] = useState(0);
+  const [formData, setFormData] = useState({ firstName: '', lastName: '', doctorName: '', status: 'Kuzatuvda', appointmentTime: '09:00', diagnosis: '', treatmentPlan: '' });
 
-  useEffect(() => { fetchPatients(); }, []);
-  const fetchPatients = async () => { 
+  useEffect(() => { fetchAllData(); }, []);
+  const fetchAllData = async () => { 
     try { 
-      const res = await safeApi('GET', 'patients'); setPatients(res.data?.data || []); 
-      const resStaff = await safeApi('GET', 'staff');
-      setDoctors((resStaff.data?.data || []).filter(s => (s.role || '').toLowerCase().includes('shifokor')));
+      const resP = await safeApi('GET', 'patients'); setPatients(resP.data?.data || []); 
+      const resS = await safeApi('GET', 'staff'); setDoctors((resS.data?.data || []).filter(s => (s.role || '').toLowerCase().includes('shifokor')));
+      const resA = await safeApi('GET', 'appointments'); setAppointments(resA.data?.data || []);
+      const resB = await safeApi('GET', 'billing'); setBills(resB.data?.data || []);
     } catch(e){} 
   };
   
   const handleOpenDialog = (p = null) => {
-    if (p) { setEditId(p.id); setFormData({ firstName: p.firstName, lastName: p.lastName, doctorName: p.doctorName, status: p.status, appointmentTime: p.appointmentTime }); }
-    else { setEditId(null); setFormData({ firstName: '', lastName: '', doctorName: '', status: 'Kuzatuvda', appointmentTime: '09:00' }); }
+    if (p) { setEditId(p.id); setFormData({ firstName: p.firstName, lastName: p.lastName, doctorName: p.doctorName, status: p.status, appointmentTime: p.appointmentTime, diagnosis: p.diagnosis || '', treatmentPlan: p.treatmentPlan || '' }); }
+    else { setEditId(null); setFormData({ firstName: '', lastName: '', doctorName: '', status: 'Kuzatuvda', appointmentTime: '09:00', diagnosis: '', treatmentPlan: '' }); }
     setOpenDialog(true);
+  };
+
+  const handleOpenEHR = (p) => {
+    setSelectedPatient(p);
+    setTabValue(0);
+    setOpenEHR(true);
   };
 
   const handleSubmit = async () => { 
@@ -422,28 +437,59 @@ const Patients = () => {
     try {
       if (editId) { await safeApi('PUT', 'patients', editId, formData); toast.success("Muvaffaqiyatli tahrirlandi!"); }
       else { await safeApi('POST', 'patients', null, formData); toast.success("Muvaffaqiyatli saqlandi!"); }
-      setOpenDialog(false); fetchPatients();
+      setOpenDialog(false); fetchAllData();
+      if(openEHR) {
+         setSelectedPatient({...selectedPatient, ...formData});
+      }
     } catch (err) { toast.error("Xatolik: " + (err.response?.data?.message || err.message || "Ulanishda xato")); }
   };
   const handleDelete = async (id) => { 
     if (!window.confirm("Rostdan ham ushbu bemorni o'chirmoqchimisiz?")) return;
-    try { await safeApi('DELETE', 'patients', id); toast.success("Bemor o'chirildi!"); fetchPatients(); } catch (err) { toast.error("Xatolik!"); }
+    try { await safeApi('DELETE', 'patients', id); toast.success("Bemor o'chirildi!"); fetchAllData(); } catch (err) { toast.error("Xatolik!"); }
   };
 
-  const exportPDF = () => {
+  const exportEHR_PDF = () => {
+    if(!selectedPatient) return;
     const doc = new jsPDF();
-    doc.text("MedUz - Bemorlar Hisoboti", 14, 15);
-    const tableData = patients.map(p => [p.firstName, p.lastName, p.doctorName, p.status, p.appointmentTime]);
-    doc.autoTable({ head: [["Ism", "Familiya", "Shifokor", "Holati", "Vaqt"]], body: tableData, startY: 20 });
-    doc.save(`Bemorlar.pdf`); toast.success("PDF Yuklab olindi!");
+    doc.setFontSize(22);
+    doc.setTextColor(139, 92, 246);
+    doc.text("MedUz - Elektron Retsept (EHR)", 14, 20);
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text(`Bemor: ${selectedPatient.firstName} ${selectedPatient.lastName}`, 14, 35);
+    doc.text(`Tashxis (Diagnoz): ${selectedPatient.diagnosis || 'Qo\'yilmagan'}`, 14, 45);
+    doc.text(`Holati: ${selectedPatient.status}`, 14, 55);
+    
+    doc.setLineWidth(0.5);
+    doc.line(14, 60, 196, 60);
+    
+    doc.setFontSize(16);
+    doc.setTextColor(16, 185, 129);
+    doc.text("Davolash Rejasi va Dori-darmonlar:", 14, 75);
+    
+    doc.setFontSize(12);
+    doc.setTextColor(50, 50, 50);
+    const splitText = doc.splitTextToSize(selectedPatient.treatmentPlan || 'Hozircha davolash rejasi kiritilmagan.', 180);
+    doc.text(splitText, 14, 85);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100, 100, 100);
+    doc.text(`Sana: ${new Date().toLocaleDateString()}`, 14, 280);
+    doc.text(`Shifokor: ${selectedPatient.doctorName}`, 130, 280);
+    
+    doc.save(`Retsept_${selectedPatient.firstName}_${selectedPatient.lastName}.pdf`); 
+    toast.success("E-Retsept PDF formatida yuklab olindi!", {icon: '📄'});
   };
 
   const cols = [
     { field: 'patient', headerName: 'Bemor F.I.O', flex: 1, minWidth: 200, renderCell: (p) => `${p.row.firstName} ${p.row.lastName}` },
     { field: 'doctorName', headerName: 'Biriktirilgan Shifokor', flex: 1, minWidth: 150 },
-    { field: 'appointmentTime', headerName: 'Vaqti', width: 100 },
-    { field: 'status', headerName: 'Holati', width: 150, renderCell: (p) => <Chip label={p.value} size="small" color={p.value === 'Sog\'aygan' ? 'success' : 'primary'} /> },
-    { field: 'actions', type: 'actions', width: 100, getActions: (p) => [
+    { field: 'diagnosis', headerName: 'Diagnoz', flex: 1, minWidth: 150, renderCell: (p) => p.value || <Typography color="textSecondary" variant="body2">Kiritilmagan</Typography> },
+    { field: 'status', headerName: 'Holati', width: 120, renderCell: (p) => <Chip label={p.value} size="small" color={p.value === 'Sog\'aygan' ? 'success' : p.value === 'Og\'ir' ? 'error' : 'primary'} /> },
+    { field: 'actions', headerName: 'EHR Karta', width: 180, renderCell: (p) => (
+      <Button variant="outlined" size="small" startIcon={<DescriptionIcon />} onClick={() => handleOpenEHR(p.row)} sx={{ borderRadius: 4, textTransform: 'none' }}>Elektron Karta</Button>
+    )},
+    { field: 'edit_del', type: 'actions', width: 80, getActions: (p) => [
       <GridActionsCellItem icon={<EditIcon color="primary"/>} label="Edit" onClick={() => handleOpenDialog(p.row)} />,
       <GridActionsCellItem icon={<DeleteIcon color="error"/>} label="Delete" onClick={() => handleDelete(p.id)} />
     ]}
@@ -451,18 +497,21 @@ const Patients = () => {
 
   const filtered = patients.filter(p => ((p.firstName || '') + ' ' + (p.lastName || '')).toLowerCase().includes((search || '').toLowerCase()) || (p.doctorName || '').toLowerCase().includes((search || '').toLowerCase()));
 
+  const patientAppointments = selectedPatient ? appointments.filter(a => a.patientName?.toLowerCase() === `${selectedPatient.firstName} ${selectedPatient.lastName}`.toLowerCase()) : [];
+  const patientBills = selectedPatient ? bills.filter(b => b.patientName?.toLowerCase() === `${selectedPatient.firstName} ${selectedPatient.lastName}`.toLowerCase()) : [];
+
   return (
     <Box>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', flexWrap: 'wrap', mb: 3, gap: 2 }}>
-        <Typography variant="h4" sx={{ fontWeight: 700 }}>Bemorlar Boshqaruvi</Typography>
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>Bemorlar Boshqaruvi (EHR Tizimi)</Typography>
         <Box sx={{ display: 'flex', gap: 2 }}>
           <TextField size="small" placeholder="Izlash..." value={search} onChange={e => setSearch(e.target.value)} InputProps={{ startAdornment: <InputAdornment position="start"><SearchOutlinedIcon /></InputAdornment> }} />
-          <Button variant="outlined" startIcon={<PictureAsPdfIcon />} onClick={exportPDF}>PDF</Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>Yangi</Button>
+          <Button variant="contained" startIcon={<AddIcon />} onClick={() => handleOpenDialog()}>Yangi Bemor</Button>
         </Box>
       </Box>
       <Card><Box sx={{ height: 600, width: '100%' }}><DataGrid rows={filtered} columns={cols} slots={{ toolbar: GridToolbar }} disableRowSelectionOnClick /></Box></Card>
       
+      {/* Oddiy Tahrirlash Oynasi */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="sm" fullWidth>
         <DialogTitle>{editId ? "Bemorni Tahrirlash" : "Yangi Bemor Qo'shish"}</DialogTitle>
         <DialogContent dividers><Grid container spacing={3} sx={{ pt: 1 }}>
@@ -473,15 +522,17 @@ const Patients = () => {
               <InputLabel>Shifokor</InputLabel>
               <Select value={formData.doctorName} label="Shifokor" onChange={e => setFormData({...formData, doctorName: e.target.value})}>
                 {doctors.map(d => <MenuItem key={d.id || d.fullName} value={d.fullName}>{d.fullName}</MenuItem>)}
-                {doctors.length === 0 && <MenuItem value="" disabled>Shifokorlar yo'q (Xodimlar bo'limidan qo'shing)</MenuItem>}
+                {doctors.length === 0 && <MenuItem value="" disabled>Shifokorlar yo'q</MenuItem>}
               </Select>
             </FormControl>
           </Grid>
           <Grid item xs={12} sm={6}><TextField fullWidth label="Vaqt" type="time" value={formData.appointmentTime} onChange={e => setFormData({...formData, appointmentTime: e.target.value})} InputLabelProps={{ shrink: true }} /></Grid>
+          <Grid item xs={12}><TextField fullWidth label="Diagnoz (Tashxis)" value={formData.diagnosis} onChange={e => setFormData({...formData, diagnosis: e.target.value})} placeholder="Masalan: O'tkir respirator kasallik" /></Grid>
+          <Grid item xs={12}><TextField fullWidth label="Davolash Rejasi (Retsept)" multiline rows={3} value={formData.treatmentPlan} onChange={e => setFormData({...formData, treatmentPlan: e.target.value})} placeholder="Masalan: Paratsetamol 1x3 mahal..." /></Grid>
           <Grid item xs={12}>
             <FormControl fullWidth>
-              <InputLabel>Holati (Kuzatuvda / Sog'aygan)</InputLabel>
-              <Select value={formData.status} label="Holati (Kuzatuvda / Sog'aygan)" onChange={e => setFormData({...formData, status: e.target.value})}>
+              <InputLabel>Holati</InputLabel>
+              <Select value={formData.status} label="Holati" onChange={e => setFormData({...formData, status: e.target.value})}>
                 <MenuItem value="Kuzatuvda">Kuzatuvda</MenuItem>
                 <MenuItem value="Sog'aygan">Sog'aygan</MenuItem>
                 <MenuItem value="Og'ir">Og'ir</MenuItem>
@@ -490,6 +541,83 @@ const Patients = () => {
           </Grid>
         </Grid></DialogContent>
         <DialogActions><Button onClick={() => setOpenDialog(false)}>Bekor qilish</Button><Button onClick={handleSubmit} variant="contained">{editId ? "Yangilash" : "Saqlash"}</Button></DialogActions>
+      </Dialog>
+
+      {/* EHR Elektron Karta Oynasi (Massive Feature) */}
+      <Dialog open={openEHR} onClose={() => setOpenEHR(false)} maxWidth="md" fullWidth PaperProps={{ sx: { minHeight: '80vh', borderRadius: 3 }}}>
+        {selectedPatient && (
+          <>
+            <Box sx={{ p: 3, bgcolor: '#8b5cf6', color: 'white', display: 'flex', alignItems: 'center', gap: 3 }}>
+              <Avatar sx={{ width: 80, height: 80, bgcolor: 'white', color: '#8b5cf6', fontSize: 32, fontWeight: 'bold' }}>{selectedPatient.firstName[0]}{selectedPatient.lastName[0]}</Avatar>
+              <Box sx={{ flex: 1 }}>
+                <Typography variant="h4" sx={{ fontWeight: 800 }}>{selectedPatient.firstName} {selectedPatient.lastName}</Typography>
+                <Typography variant="subtitle1" sx={{ opacity: 0.9 }}>Bemor ID: #{selectedPatient.id.slice(0,8).toUpperCase()} | Shifokor: {selectedPatient.doctorName}</Typography>
+              </Box>
+              <Chip label={selectedPatient.status} sx={{ bgcolor: 'rgba(255,255,255,0.2)', color: 'white', fontWeight: 'bold', fontSize: '1rem', px: 1, py: 2 }} />
+            </Box>
+            
+            <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 3 }}>
+              <Tabs value={tabValue} onChange={(e, v) => setTabValue(v)} textColor="secondary" indicatorColor="secondary">
+                <Tab icon={<HistoryIcon />} iconPosition="start" label="Klinik Tarix" />
+                <Tab icon={<MedicationIcon />} iconPosition="start" label="Davolash & Retsept" />
+              </Tabs>
+            </Box>
+
+            <DialogContent sx={{ p: 4, bgcolor: '#f8fafc' }}>
+              {/* Tab 1: Klinik Tarix (Timeline) */}
+              {tabValue === 0 && (
+                <Grid container spacing={4}>
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: '#334155' }}>Navbatlar va Tashriflar</Typography>
+                    {patientAppointments.length > 0 ? patientAppointments.map((a, i) => (
+                      <Box key={i} sx={{ position: 'relative', pl: 3, pb: 3, borderLeft: '2px solid #cbd5e1' }}>
+                        <Box sx={{ position: 'absolute', left: -6, top: 0, width: 10, height: 10, borderRadius: '50%', bgcolor: '#3b82f6' }} />
+                        <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 'bold' }}>{a.date} | {a.time}</Typography>
+                        <Typography variant="body1" sx={{ mt: 0.5 }}>Shikoyat: {a.reason || 'Noma\'lum'}</Typography>
+                        <Chip size="small" label={a.status} sx={{ mt: 1 }} />
+                      </Box>
+                    )) : <Typography color="textSecondary">Tashriflar tarixi yo'q</Typography>}
+                  </Grid>
+                  
+                  <Grid item xs={12} md={6}>
+                    <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: '#334155' }}>Moliya va Kassa</Typography>
+                    {patientBills.length > 0 ? patientBills.map((b, i) => (
+                      <Box key={i} sx={{ position: 'relative', pl: 3, pb: 3, borderLeft: '2px solid #cbd5e1' }}>
+                        <Box sx={{ position: 'absolute', left: -6, top: 0, width: 10, height: 10, borderRadius: '50%', bgcolor: b.status === 'To\'langan' ? '#10b981' : '#ef4444' }} />
+                        <Typography variant="subtitle2" color="textSecondary">{b.date}</Typography>
+                        <Typography variant="body1" sx={{ fontWeight: 'bold', mt: 0.5 }}>{b.serviceName}</Typography>
+                        <Typography variant="h6" sx={{ color: '#334155' }}>{b.amount.toLocaleString()} UZS</Typography>
+                        <Chip size="small" label={b.status} color={b.status === 'To\'langan' ? 'success' : 'error'} sx={{ mt: 1 }} />
+                      </Box>
+                    )) : <Typography color="textSecondary">Moliya tarixi yo'q</Typography>}
+                  </Grid>
+                </Grid>
+              )}
+
+              {/* Tab 2: Davolash va Retsept */}
+              {tabValue === 1 && (
+                <Box>
+                  <Card sx={{ p: 3, mb: 3, border: '1px solid #e2e8f0', boxShadow: 'none' }}>
+                    <Typography variant="subtitle2" color="textSecondary">Joriy Diagnoz (Tashxis)</Typography>
+                    <Typography variant="h5" sx={{ mt: 1, fontWeight: 700, color: '#8b5cf6' }}>{selectedPatient.diagnosis || 'Kiritilmagan'}</Typography>
+                  </Card>
+                  
+                  <Card sx={{ p: 3, border: '1px solid #e2e8f0', boxShadow: 'none', bgcolor: '#f0fdf4' }}>
+                    <Typography variant="subtitle2" sx={{ color: '#166534', fontWeight: 'bold', mb: 2 }}>Davolash Rejasi (Dori-darmonlar)</Typography>
+                    <Typography variant="body1" sx={{ whiteSpace: 'pre-wrap', color: '#14532d' }}>
+                      {selectedPatient.treatmentPlan || 'Davolash rejasi hozircha shakllantirilmagan.'}
+                    </Typography>
+                  </Card>
+                  
+                  <Box sx={{ mt: 4, display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
+                    <Button variant="outlined" startIcon={<EditIcon />} onClick={() => { setOpenEHR(false); handleOpenDialog(selectedPatient); }}>Tahrirlash</Button>
+                    <Button variant="contained" color="secondary" startIcon={<PictureAsPdfIcon />} onClick={exportEHR_PDF} sx={{ bgcolor: '#8b5cf6', '&:hover': { bgcolor: '#7c3aed' }}}>E-Retsept (PDF) Yuklash</Button>
+                  </Box>
+                </Box>
+              )}
+            </DialogContent>
+          </>
+        )}
       </Dialog>
     </Box>
   );
