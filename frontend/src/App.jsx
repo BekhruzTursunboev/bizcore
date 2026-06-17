@@ -575,7 +575,7 @@ const Patients = ({ loggedInUser }) => {
                 <Grid container spacing={4}>
                   <Grid item xs={12} md={6}>
                     <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: '#334155' }}>Navbatlar va Tashriflar</Typography>
-                    {patientAppointments.length > 0 ? patientAppointments.map((a, i) => (
+                    {patientAppointments.length > 0 ? [...patientAppointments].sort((a,b)=>new Date(b.date)-new Date(a.date)).map((a, i) => (
                       <Box key={i} sx={{ position: 'relative', pl: 3, pb: 3, borderLeft: '2px solid #cbd5e1' }}>
                         <Box sx={{ position: 'absolute', left: -6, top: 0, width: 10, height: 10, borderRadius: '50%', bgcolor: '#3b82f6' }} />
                         <Typography variant="subtitle2" color="primary" sx={{ fontWeight: 'bold' }}>{a.date} | {a.time}</Typography>
@@ -587,12 +587,12 @@ const Patients = ({ loggedInUser }) => {
                   
                   <Grid item xs={12} md={6}>
                     <Typography variant="h6" sx={{ mb: 3, fontWeight: 700, color: '#334155' }}>Moliya va Kassa</Typography>
-                    {patientBills.length > 0 ? patientBills.map((b, i) => (
+                    {patientBills.length > 0 ? [...patientBills].sort((a,b)=>new Date(b.date)-new Date(a.date)).map((b, i) => (
                       <Box key={i} sx={{ position: 'relative', pl: 3, pb: 3, borderLeft: '2px solid #cbd5e1' }}>
                         <Box sx={{ position: 'absolute', left: -6, top: 0, width: 10, height: 10, borderRadius: '50%', bgcolor: b.status === 'To\'langan' ? '#10b981' : '#ef4444' }} />
                         <Typography variant="subtitle2" color="textSecondary">{b.date}</Typography>
                         <Typography variant="body1" sx={{ fontWeight: 'bold', mt: 0.5 }}>{b.serviceName}</Typography>
-                        <Typography variant="h6" sx={{ color: '#334155' }}>{b.amount.toLocaleString()} UZS</Typography>
+                        <Typography variant="h6" sx={{ color: '#334155' }}>{Number(b.amount).toLocaleString()} UZS</Typography>
                         <Chip size="small" label={b.status} color={b.status === 'To\'langan' ? 'success' : 'error'} sx={{ mt: 1 }} />
                       </Box>
                     )) : <Typography color="textSecondary">Moliya tarixi yo'q</Typography>}
@@ -828,7 +828,7 @@ const Staff = () => {
     { field: 'role', headerName: 'Lavozim', flex: 1, minWidth: 150 },
     { field: 'department', headerName: 'Bo\'lim', flex: 1, minWidth: 150 },
     { field: 'phone', headerName: 'Telefon', width: 150 },
-    { field: 'password', headerName: 'Parol', width: 120 },
+    { field: 'password', headerName: 'Parol', width: 120, renderCell: () => '****' },
     { field: 'actions', type: 'actions', width: 100, getActions: (p) => [
       <GridActionsCellItem icon={<EditIcon color="primary"/>} label="Edit" onClick={() => handleOpen(p.row)} />,
       <GridActionsCellItem icon={<DeleteIcon color="error"/>} label="Delete" onClick={() => handleDelete(p.id)} />
