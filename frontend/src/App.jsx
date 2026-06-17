@@ -758,7 +758,7 @@ const Appointments = ({ loggedInUser }) => {
     const doc = new jsPDF();
     doc.text("Navbatlar (Appointments)", 14, 15);
     const tableData = appointments.map(a => [a.patientName, a.doctorName, a.date, a.time, a.status]);
-    doc.autoTable({ head: [["Bemor", "Shifokor", "Sana", "Vaqt", "Holati"]], body: tableData, startY: 20 });
+    autoTable(doc, { head: [["Bemor", "Shifokor", "Sana", "Vaqt", "Holati"]], body: tableData, startY: 20 });
     doc.save(`Navbatlar.pdf`); toast.success("PDF Yuklab olindi!");
   };
 
