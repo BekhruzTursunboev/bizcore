@@ -1034,7 +1034,7 @@ const AppLayout = ({ onLogout, themeMode, toggleTheme, theme, loggedInUser }) =>
   
   const allNavs = [
     { text: 'Boshqaruv Paneli', icon: <DashboardOutlinedIcon />, path: '/', roles: ['Bosh shifokor', 'Kassir'] },
-    { text: 'AI Tashxis', icon: <AutoAwesomeIcon sx={{ color: '#8b5cf6' }} />, path: '/ai-diagnostics', roles: ['Bosh shifokor', 'Hamshira', 'Qabulxona'] },
+    { text: 'AI Tashxis', icon: <AutoAwesomeIcon sx={{ color: '#8b5cf6' }} />, path: '/ai-diagnostics', roles: ['Hamshira', 'Qabulxona'] },
     { text: 'Bemorlar', icon: <PeopleOutlinedIcon />, path: '/patients', roles: ['Bosh shifokor', 'Shifokor', 'Hamshira', 'Qabulxona'] },
     { text: 'Navbatlar', icon: <AssignmentIcon />, path: '/appointments', roles: ['Bosh shifokor', 'Shifokor', 'Hamshira', 'Qabulxona'] },
     { text: 'Xodimlar', icon: <MedicalServicesOutlinedIcon />, path: '/staff', roles: ['Bosh shifokor'] },
