@@ -397,7 +397,7 @@ const Dashboard = ({ theme }) => {
   );
 };
 
-const Patients = () => {
+const Patients = ({ loggedInUser }) => {
   const [patients, setPatients] = useState([]);
   const [doctors, setDoctors] = useState([]);
   const [appointments, setAppointments] = useState([]);
@@ -495,7 +495,10 @@ const Patients = () => {
     ]}
   ];
 
-  const filtered = patients.filter(p => ((p.firstName || '') + ' ' + (p.lastName || '')).toLowerCase().includes((search || '').toLowerCase()) || (p.doctorName || '').toLowerCase().includes((search || '').toLowerCase()));
+  let filtered = patients.filter(p => ((p.firstName || '') + ' ' + (p.lastName || '')).toLowerCase().includes((search || '').toLowerCase()) || (p.doctorName || '').toLowerCase().includes((search || '').toLowerCase()));
+  if (loggedInUser?.role === 'Shifokor') {
+    filtered = filtered.filter(p => p.doctorName === loggedInUser.fullName);
+  }
 
   const patientAppointments = selectedPatient ? appointments.filter(a => a.patientName?.toLowerCase() === `${selectedPatient.firstName} ${selectedPatient.lastName}`.toLowerCase()) : [];
   const patientBills = selectedPatient ? bills.filter(b => b.patientName?.toLowerCase() === `${selectedPatient.firstName} ${selectedPatient.lastName}`.toLowerCase()) : [];
@@ -1023,7 +1026,7 @@ const AppLayout = ({ onLogout, themeMode, toggleTheme, theme, loggedInUser }) =>
           <Routes>
             <Route path="/" element={<Dashboard theme={theme}/>} />
             <Route path="/ai-diagnostics" element={<AIDiagnostics />} />
-            <Route path="/patients" element={<Patients />} />
+            <Route path="/patients" element={<Patients loggedInUser={loggedInUser} />} />
             <Route path="/appointments" element={<Appointments loggedInUser={loggedInUser}/>} />
             <Route path="/staff" element={<Staff />} />
             <Route path="/billing" element={<Billing />} />
