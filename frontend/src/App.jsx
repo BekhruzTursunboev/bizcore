@@ -1102,7 +1102,7 @@ export default function App() {
   }, []);
   
   const handleLogin = (user) => { setLoggedInUser(user); localStorage.setItem('meduz_auth_user', JSON.stringify(user)); };
-  const handleLogout = () => { setLoggedInUser(null); localStorage.removeItem('meduz_auth_user'); };
+  const handleLogout = () => { setLoggedInUser(null); localStorage.removeItem('meduz_auth_user'); window.location.href = '/'; };
   const toggleTheme = () => { setMode(prev => prev === 'light' ? 'dark' : 'light'); };
 
   const theme = useMemo(() => createTheme({
