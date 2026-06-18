@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE = import.meta.env.VITE_API_URL || 'https://bizcore-backend.onrender.com';
+const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const api = axios.create({ baseURL: BASE });
 
