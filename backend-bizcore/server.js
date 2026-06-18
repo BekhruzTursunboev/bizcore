@@ -728,8 +728,14 @@ app.get('/api/stats/finance-monthly', auth, async (req, res) => {
 });
 
 /* ─── START ─────────────────────────────────────────────────────────────────── */
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, async () => {
-  console.log(`🚀 BizCore API → http://localhost:${PORT}`);
-  await initDB();
-});
+// Run initDB on startup regardless of environment
+initDB().catch(err => console.error('DB init error:', err));
+
+if (process.env.NODE_ENV !== 'production' || process.env.LOCAL_DEV) {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`🚀 BizCore API → http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

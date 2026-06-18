@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+// In production on Vercel, API and frontend share the same domain.
+// So we use a relative base URL ('') which means requests go to the same host.
+// In local dev, we fall back to localhost:5000.
+const BASE = import.meta.env.VITE_API_URL !== undefined && import.meta.env.VITE_API_URL !== ''
+  ? import.meta.env.VITE_API_URL
+  : (import.meta.env.PROD ? '' : 'http://localhost:5000');
 
 const api = axios.create({ baseURL: BASE });
 
