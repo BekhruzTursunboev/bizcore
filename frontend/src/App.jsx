@@ -1282,10 +1282,14 @@ const Login = ({ onLogin }) => {
   };
 
   const demos = [
-    ['admin@bizcore.uz','admin123','Direktor'],
-    ['hr@bizcore.uz','123456','HR Menejer'],
-    ['finance@bizcore.uz','123456','Moliya Menejeri'],
-    ['sales@bizcore.uz','123456','Savdo Menejeri'],
+    { email:'admin@bizcore.uz',    pw:'admin123', role:'Direktor',         dept:'Boshqaruv',         color:'#2563eb' },
+    { email:'hr@bizcore.uz',       pw:'123456',   role:'HR Menejer',       dept:'HR Bo\'limi',       color:'#059669' },
+    { email:'finance@bizcore.uz',  pw:'123456',   role:'Moliya Menejeri',  dept:'Moliya Bo\'limi',   color:'#7c3aed' },
+    { email:'sales@bizcore.uz',    pw:'123456',   role:'Savdo Menejeri',   dept:'Savdo Bo\'limi',    color:'#db2777' },
+    { email:'warehouse@bizcore.uz',pw:'123456',   role:'Ombor Boshlig\'i', dept:'Omborxona',         color:'#d97706' },
+    { email:'it@bizcore.uz',       pw:'123456',   role:'Dasturchi',        dept:'IT Bo\'limi',       color:'#0891b2' },
+    { email:'marketing@bizcore.uz',pw:'123456',   role:'Marketolog',       dept:'Marketing Bo\'limi',color:'#65a30d' },
+    { email:'designer@bizcore.uz', pw:'123456',   role:'Dizayner',         dept:'IT Bo\'limi',       color:'#c026d3' },
   ];
 
   return (
@@ -1317,17 +1321,17 @@ const Login = ({ onLogin }) => {
       </div>
 
       {/* Right */}
-      <div style={{width:500,display:'flex',alignItems:'center',justifyContent:'center',padding:48}}>
-        <div style={{width:'100%',maxWidth:390}}>
-          <div style={{marginBottom:32}}>
-            <h2 style={{fontSize:24,fontWeight:800,letterSpacing:'-.3px',marginBottom:6}}>Tizimga kirish</h2>
-            <p style={{fontSize:13.5,color:'var(--text-2)'}}>Hisobingiz ma'lumotlarini kiriting</p>
+      <div style={{width:520,display:'flex',alignItems:'center',justifyContent:'center',padding:'32px 40px',overflowY:'auto'}}>
+        <div style={{width:'100%',maxWidth:440}}>
+          <div style={{marginBottom:24}}>
+            <h2 style={{fontSize:24,fontWeight:800,letterSpacing:'-.3px',marginBottom:5}}>Tizimga kirish</h2>
+            <p style={{fontSize:13,color:'var(--text-2)'}}>Hisobingiz ma'lumotlarini kiriting yoki demo hisobni tanlang</p>
           </div>
-          {err&&<div style={{background:'#fee2e2',border:'1px solid #fca5a5',color:'#991b1b',padding:'11px 14px',borderRadius:10,marginBottom:18,fontSize:13.5,fontWeight:500,display:'flex',gap:8,alignItems:'center'}}><Ic d={IC.warn} size={15} stroke="#991b1b"/>{err}</div>}
-          <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:14}}>
+          {err&&<div style={{background:'#fee2e2',border:'1px solid #fca5a5',color:'#991b1b',padding:'11px 14px',borderRadius:10,marginBottom:16,fontSize:13,fontWeight:500,display:'flex',gap:8,alignItems:'center'}}><Ic d={IC.warn} size={15} stroke="#991b1b"/>{err}</div>}
+          <form onSubmit={submit} style={{display:'flex',flexDirection:'column',gap:12}}>
             <Inp label="Email manzili" type="email" value={email} onChange={e=>setEmail(e.target.value)} placeholder="admin@bizcore.uz" required/>
             <Inp label="Parol" type="password" value={password} onChange={e=>setPassword(e.target.value)} placeholder="••••••••" required/>
-            <button type="submit" disabled={loading} style={{width:'100%',padding:'13px',background:'#2563eb',color:'#fff',border:'none',borderRadius:12,fontFamily:'Outfit,sans-serif',fontSize:15,fontWeight:700,cursor:loading?'not-allowed':'pointer',opacity:loading?.8:1,transition:'all .15s',marginTop:4}}
+            <button type="submit" disabled={loading} style={{width:'100%',padding:'13px',background:'#2563eb',color:'#fff',border:'none',borderRadius:12,fontFamily:'Outfit,sans-serif',fontSize:15,fontWeight:700,cursor:loading?'not-allowed':'pointer',opacity:loading?.8:1,transition:'all .15s',marginTop:2}}
               onMouseEnter={e=>{if(!loading)e.currentTarget.style.background='#1d4ed8';}}
               onMouseLeave={e=>e.currentTarget.style.background='#2563eb'}
               onMouseDown={e=>{if(!loading)e.currentTarget.style.transform='scale(0.98)';}}
@@ -1335,18 +1339,26 @@ const Login = ({ onLogin }) => {
               {loading?'Tekshirilmoqda...':'Kirish →'}
             </button>
           </form>
-          <div style={{marginTop:24,padding:'14px 16px',background:'var(--accent-muted)',borderRadius:12,border:'1px solid rgba(37,99,235,.15)'}}>
-            <p style={{fontSize:11.5,fontWeight:700,color:'var(--text-2)',marginBottom:8,textTransform:'uppercase',letterSpacing:'.06em'}}>Demo hisoblar</p>
-            <div style={{display:'flex',flexDirection:'column',gap:6}}>
-              {demos.map(([em,pw,role],i)=>(
-                <button key={i} onClick={()=>{setEmail(em);setPassword(pw);}}
-                  style={{display:'flex',alignItems:'center',gap:10,padding:'7px 10px',borderRadius:8,border:'1px solid rgba(37,99,235,.15)',background:'rgba(37,99,235,.05)',cursor:'pointer',transition:'all .15s',textAlign:'left'}}
-                  onMouseEnter={e=>{e.currentTarget.style.background='rgba(37,99,235,.1)';}}
-                  onMouseLeave={e=>{e.currentTarget.style.background='rgba(37,99,235,.05)';}}>
-                  <Av name={em} size={22}/>
-                  <div>
-                    <div style={{fontSize:12,fontWeight:600,color:'var(--text-1)'}}>{role}</div>
-                    <div style={{fontSize:10.5,color:'var(--text-3)'}}>{em}</div>
+
+          {/* Demo accounts — 2 column grid, all 8 visible */}
+          <div style={{marginTop:20,padding:'16px',background:'var(--accent-muted)',borderRadius:14,border:'1px solid rgba(37,99,235,.18)'}}>
+            <p style={{fontSize:11,fontWeight:800,color:'var(--text-2)',marginBottom:10,textTransform:'uppercase',letterSpacing:'.08em',display:'flex',alignItems:'center',gap:6}}>
+              <Ic d={IC.users[0]} size={12} stroke="var(--text-2)"/>
+              Demo Hisoblar — Bosing va kirish
+            </p>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:6}}>
+              {demos.map((d,i)=>(
+                <button key={i} onClick={()=>{setEmail(d.email);setPassword(d.pw);}}
+                  style={{display:'flex',alignItems:'center',gap:8,padding:'8px 10px',borderRadius:9,border:`1.5px solid ${d.color}22`,background:`${d.color}08`,cursor:'pointer',transition:'all .15s',textAlign:'left',width:'100%'}}
+                  onMouseEnter={e=>{e.currentTarget.style.background=`${d.color}18`;e.currentTarget.style.borderColor=`${d.color}55`;}}
+                  onMouseLeave={e=>{e.currentTarget.style.background=`${d.color}08`;e.currentTarget.style.borderColor=`${d.color}22`;}}>
+                  <div style={{width:30,height:30,borderRadius:8,background:d.color,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,fontSize:11,fontWeight:800,color:'#fff'}}>
+                    {d.role[0]}
+                  </div>
+                  <div style={{minWidth:0}}>
+                    <div style={{fontSize:11.5,fontWeight:700,color:'var(--text-1)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{d.role}</div>
+                    <div style={{fontSize:10,color:'var(--text-3)',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{d.email}</div>
+                    <div style={{fontSize:9.5,color:d.color,fontWeight:700,marginTop:1}}>🔑 {d.pw}</div>
                   </div>
                 </button>
               ))}
