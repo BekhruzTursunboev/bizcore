@@ -215,13 +215,29 @@ const useCrud = endpoint => {
 };
 
 /* ─── CONSTANTS ──────────────────────────────────────────────────────────── */
-const ROLES = ['Direktor','Bosh Menejer','HR Menejer','Moliya Menejeri','Savdo Menejeri','Ombor Boshlig\'i','Dasturchi','Dizayner','Marketolog','Buxgalter','Xodim'];
+const ROLES = ['Super Admin','Direktor','Bosh Menejer','HR Menejer','Moliya Menejeri','Savdo Menejeri','Ombor Boshlig\'i','Dasturchi','Dizayner','Marketolog','Buxgalter','Xodim'];
 const DEPTS = ['Boshqaruv','HR Bo\'limi','Moliya Bo\'limi','Savdo Bo\'limi','Omborxona','IT Bo\'limi','Marketing Bo\'limi'];
 const STATUSES = ['Faol','Nofaol','Ta\'tilda'];
 const PRIOS = ['Yuqori','Oddiy','Past'];
 const TASK_ST = ['Yangi','Jarayonda','Bajarildi','Bekor qilindi'];
 const FIN_ST = ['Tasdiqlangan','Kutilmoqda','Bekor qilindi'];
 const CONTRACT_ST = ['Faol','Kutilmoqda','Bajarildi','Bekor qilindi'];
+
+/* ─── ROLE PERMISSIONS ───────────────────────────────────────────────────── */
+const ROLE_PERMS = {
+  'Super Admin':      { pages:['dashboard','users','departments','products','finance','tasks','clients','contracts','activity'], canWrite:true },
+  'Direktor':         { pages:['dashboard','users','departments','products','finance','tasks','clients','contracts','activity'], canWrite:false },
+  'HR Menejer':       { pages:['dashboard','users','departments','tasks','activity'], canWrite:true },
+  'Moliya Menejeri':  { pages:['dashboard','finance','contracts','activity'], canWrite:true },
+  'Savdo Menejeri':   { pages:['dashboard','clients','contracts','activity'], canWrite:true },
+  'Ombor Boshlig\'i': { pages:['dashboard','products','activity'], canWrite:true },
+  'Dasturchi':        { pages:['dashboard','tasks','products'], canWrite:true },
+  'Marketolog':       { pages:['dashboard','clients','tasks'], canWrite:true },
+  'Dizayner':         { pages:['dashboard','tasks'], canWrite:true },
+  'Buxgalter':        { pages:['dashboard','finance'], canWrite:true },
+  'Xodim':            { pages:['dashboard','tasks'], canWrite:false },
+};
+const getPerms = role => ROLE_PERMS[role] || { pages:['dashboard'], canWrite:false };
 
 /* ─── FORM COMPONENTS ────────────────────────────────────────────────────── */
 const grid2 = { display:'grid', gridTemplateColumns:'1fr 1fr', gap:14 };
@@ -621,7 +637,7 @@ const KanbanBoard = ({ rows, onEdit, onDelete, onView, onStatusChange }) => {
 };
 
 /* ─── CRUD PAGE ──────────────────────────────────────────────────────────── */
-const CrudPage = ({ title, subtitle, endpoint, cols, FormComp, searchKeys=[], pdfTitle, filters }) => {
+const CrudPage = ({ title, subtitle, endpoint, cols, FormComp, searchKeys=[], pdfTitle, filters, canWrite=true, user }) => {
   const { rows, loading, saving, save, remove, fetch } = useCrud(endpoint);
   const [search, setSearch] = useState('');
   const [filterVals, setFilterVals] = useState({});
@@ -713,18 +729,20 @@ const CrudPage = ({ title, subtitle, endpoint, cols, FormComp, searchKeys=[], pd
           onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.color='var(--text-3)';}}>
           <Ic d={IC.eye} size={13} />
         </button>
+        {canWrite && (
         <button onClick={()=>setModal({mode:'edit',data:row})} title="Tahrirlash"
           style={{ padding:'5px 7px', border:'1.5px solid var(--border)', borderRadius:7, background:'none', cursor:'pointer', color:'var(--text-3)', display:'flex', alignItems:'center', transition:'all .15s' }}
           onMouseEnter={e=>{e.currentTarget.style.borderColor='#2563eb';e.currentTarget.style.color='#2563eb';}}
           onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.color='var(--text-3)';}}>
           <Ic d={IC.edit} size={13} />
-        </button>
+        </button>)}
+        {canWrite && (
         <button onClick={()=>setConfirm(row.id)} title="O'chirish"
           style={{ padding:'5px 7px', border:'1.5px solid var(--border)', borderRadius:7, background:'none', cursor:'pointer', color:'var(--text-3)', display:'flex', alignItems:'center', transition:'all .15s' }}
           onMouseEnter={e=>{e.currentTarget.style.borderColor='#dc2626';e.currentTarget.style.color='#dc2626';}}
           onMouseLeave={e=>{e.currentTarget.style.borderColor='var(--border)';e.currentTarget.style.color='var(--text-3)';}}>
           <Ic d={IC.trash} size={13} />
-        </button>
+        </button>)}
       </div>
     )
   }];
@@ -756,9 +774,11 @@ const CrudPage = ({ title, subtitle, endpoint, cols, FormComp, searchKeys=[], pd
           )}
           <Btn variant="secondary" size="sm" icon={IC.refresh} onClick={()=>fetch()}>Yangilash</Btn>
           <Btn variant="secondary" size="sm" icon={IC.pdf} onClick={exportPDF}>PDF</Btn>
-          <Btn size="sm" icon={IC.plus} onClick={()=>setModal({mode:'add'})}>Yangi qo'shish</Btn>
+          {canWrite && <Btn size="sm" icon={IC.plus} onClick={()=>setModal({mode:'add'})}>Yangi qo'shish</Btn>}
+          {!canWrite && <span style={{fontSize:12,color:'#d97706',fontWeight:700,background:'#fef9c3',padding:'5px 12px',borderRadius:8,border:'1px solid #fde047'}}>👁 Faqat ko'rish rejimi</span>}
         </div>
       </div>
+
 
       <div style={{ background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:14, overflow:'hidden', boxShadow:'var(--shadow-sm)' }}>
         {viewMode === 'table' ? (
@@ -794,7 +814,7 @@ const CrudPage = ({ title, subtitle, endpoint, cols, FormComp, searchKeys=[], pd
           </div>
           <div style={{ marginTop:16, display:'flex', justifyContent:'flex-end', gap:8 }}>
             <Btn variant="secondary" onClick={()=>setViewRow(null)}>Yopish</Btn>
-            <Btn icon={IC.edit} onClick={()=>{ setModal({mode:'edit',data:viewRow}); setViewRow(null); }}>Tahrirlash</Btn>
+            {canWrite && <Btn icon={IC.edit} onClick={()=>{ setModal({mode:'edit',data:viewRow}); setViewRow(null); }}>Tahrirlash</Btn>}
           </div>
         </div>}
       </Modal>
@@ -806,11 +826,11 @@ const CrudPage = ({ title, subtitle, endpoint, cols, FormComp, searchKeys=[], pd
 
 
 /* ─── PAGES ──────────────────────────────────────────────────────────────── */
-const UsersPage = () => <CrudPage title="Xodimlar" subtitle="HR — Kadrlar boshqaruvi moduli" endpoint="users" FormComp={UserForm} searchKeys={['full_name','email','role','department']} pdfTitle="Xodimlar Ro'yxati"
+const UsersPage = ({ user }) => <CrudPage title="Xodimlar" subtitle="HR — Kadrlar boshqaruvi moduli" endpoint="users" FormComp={UserForm} searchKeys={['full_name','email','role','department']} pdfTitle="Xodimlar Ro'yxati" canWrite={getPerms(user?.role).canWrite} user={user}
   filters={[{key:'department',label:'Bo\'lim',opts:DEPTS},{key:'status',label:'Holat',opts:STATUSES}]}
   cols={[
     { key:'full_name', label:'Xodim', render:(v,r)=><div style={{ display:'flex', alignItems:'center', gap:9 }}><Av name={v} size={32}/><div><div style={{ fontWeight:700,fontSize:13.5 }}>{v}</div><div style={{ fontSize:11,color:'var(--text-3)' }}>{r.email}</div></div></div> },
-    { key:'role', label:'Lavozim' },
+    { key:'role', label:'Lavozim', render:v=><span style={{ fontWeight:600,fontSize:13 }}>{v}</span> },
     { key:'department', label:'Bo\'lim', render:v=><span style={{ background:'var(--accent-muted)',color:'var(--accent)',padding:'3px 9px',borderRadius:6,fontSize:12,fontWeight:600 }}>{v}</span> },
     { key:'phone', label:'Telefon' },
     { key:'salary', label:'Maosh', render:v=><span style={{ fontWeight:700,color:'#059669',fontVariantNumeric:'tabular-nums',fontSize:13 }}>{fmt(v)}</span> },
@@ -819,7 +839,7 @@ const UsersPage = () => <CrudPage title="Xodimlar" subtitle="HR — Kadrlar bosh
   ]}
 />;
 
-const DeptsPage = () => <CrudPage title="Bo'limlar" subtitle="Tashkilot tuzilmasi va bo'limlar" endpoint="departments" FormComp={DeptForm} searchKeys={['name','manager_name','location']} pdfTitle="Bo'limlar Ro'yxati"
+const DeptsPage = ({ user }) => <CrudPage title="Bo'limlar" subtitle="Tashkilot tuzilmasi va bo'limlar" endpoint="departments" FormComp={DeptForm} searchKeys={['name','manager_name','location']} pdfTitle="Bo'limlar Ro'yxati" canWrite={getPerms(user?.role).canWrite} user={user}
   cols={[
     { key:'name', label:'Bo\'lim', render:v=><span style={{ fontWeight:700 }}>{v}</span> },
     { key:'manager_name', label:'Rahbar', render:v=>v?<div style={{ display:'flex',alignItems:'center',gap:8 }}><Av name={v} size={26}/><span style={{ fontSize:13.5 }}>{v}</span></div>:'—' },
@@ -831,7 +851,7 @@ const DeptsPage = () => <CrudPage title="Bo'limlar" subtitle="Tashkilot tuzilmas
   ]}
 />;
 
-const ProductsPage = () => <CrudPage title="Inventar va Omborxona" subtitle="Mahsulotlar zaxirasi va inventar boshqaruvi" endpoint="products" FormComp={ProductForm} searchKeys={['name','category','supplier','location']} pdfTitle="Inventar Ro'yxati"
+const ProductsPage = ({ user }) => <CrudPage title="Inventar va Omborxona" subtitle="Mahsulotlar zaxirasi va inventar boshqaruvi" endpoint="products" FormComp={ProductForm} searchKeys={['name','category','supplier','location']} pdfTitle="Inventar Ro'yxati" canWrite={getPerms(user?.role).canWrite} user={user}
   filters={[{key:'category',label:'Kategoriya',opts:['Elektronika','Mebel','Sarflovlar','Jihozlar','Aksesuar']},{key:'status',label:'Holat',opts:['Mavjud','Kam qoldi','Tugagan']}]}
   cols={[
     { key:'name', label:'Mahsulot', render:v=><span style={{ fontWeight:600 }}>{v}</span> },
@@ -845,7 +865,7 @@ const ProductsPage = () => <CrudPage title="Inventar va Omborxona" subtitle="Mah
   ]}
 />;
 
-const FinancePage = () => <CrudPage title="Moliya va Hisobotlar" subtitle="Daromad, xarajat va moliyaviy tranzaksiyalar" endpoint="finance" FormComp={FinanceForm} searchKeys={['type','category','description','department','reference_no']} pdfTitle="Moliyaviy Hisobot"
+const FinancePage = ({ user }) => <CrudPage title="Moliya va Hisobotlar" subtitle="Daromad, xarajat va moliyaviy tranzaksiyalar" endpoint="finance" FormComp={FinanceForm} searchKeys={['type','category','description','department','reference_no']} pdfTitle="Moliyaviy Hisobot" canWrite={getPerms(user?.role).canWrite} user={user}
   filters={[{key:'type',label:'Tur',opts:['Kirim','Chiqim']},{key:'department',label:'Bo\'lim',opts:DEPTS},{key:'status',label:'Holat',opts:FIN_ST}]}
   cols={[
     { key:'type', label:'Tur', render:v=><span style={{ padding:'3px 11px',borderRadius:99,fontSize:12,fontWeight:700,background:v==='Kirim'?'#dcfce7':'#fee2e2',color:v==='Kirim'?'#166534':'#991b1b' }}>{v}</span> },
@@ -859,7 +879,7 @@ const FinancePage = () => <CrudPage title="Moliya va Hisobotlar" subtitle="Darom
   ]}
 />;
 
-const TasksPage = () => <CrudPage title="Vazifalar" subtitle="Topshiriqlar, muddatlar va bajarilish nazorati" endpoint="tasks" FormComp={TaskForm} searchKeys={['title','assigned_to','department']} pdfTitle="Vazifalar Ro'yxati"
+const TasksPage = ({ user }) => <CrudPage title="Vazifalar" subtitle="Topshiriqlar, muddatlar va bajarilish nazorati" endpoint="tasks" FormComp={TaskForm} searchKeys={['title','assigned_to','department']} pdfTitle="Vazifalar Ro'yxati" canWrite={getPerms(user?.role).canWrite} user={user}
   filters={[{key:'priority',label:'Muhimlik',opts:PRIOS},{key:'status',label:'Holat',opts:TASK_ST},{key:'department',label:'Bo\'lim',opts:DEPTS}]}
   cols={[
     { key:'title', label:'Vazifa', render:v=><span style={{ fontWeight:600,maxWidth:220,display:'block',overflow:'hidden',textOverflow:'ellipsis' }}>{v}</span> },
@@ -872,7 +892,7 @@ const TasksPage = () => <CrudPage title="Vazifalar" subtitle="Topshiriqlar, mudd
   ]}
 />;
 
-const ClientsPage = () => <CrudPage title="Mijozlar (CRM)" subtitle="Mijozlar bazasi va munosabatlar boshqaruvi" endpoint="clients" FormComp={ClientForm} searchKeys={['company_name','contact_person','email','industry']} pdfTitle="Mijozlar Ro'yxati"
+const ClientsPage = ({ user }) => <CrudPage title="Mijozlar (CRM)" subtitle="Mijozlar bazasi va munosabatlar boshqaruvi" endpoint="clients" FormComp={ClientForm} searchKeys={['company_name','contact_person','email','industry']} pdfTitle="Mijozlar Ro'yxati" canWrite={getPerms(user?.role).canWrite} user={user}
   filters={[{key:'status',label:'Holat',opts:['Faol','Kutilmoqda','Nofaol']},{key:'industry',label:'Soha',opts:['IT','Savdo','Ishlab chiqarish','Turizm','Qishloq xo\'jaligi']}]}
   cols={[
     { key:'company_name', label:'Kompaniya', render:(v,r)=><div style={{ display:'flex',alignItems:'center',gap:9 }}><Av name={v} size={32}/><div><div style={{ fontWeight:700 }}>{v}</div><div style={{ fontSize:11,color:'var(--text-3)' }}>{r.contact_person}</div></div></div> },
@@ -885,7 +905,7 @@ const ClientsPage = () => <CrudPage title="Mijozlar (CRM)" subtitle="Mijozlar ba
   ]}
 />;
 
-const ContractsPage = () => <CrudPage title="Shartnomalar" subtitle="Faol va kutilayotgan biznes shartnomalar" endpoint="contracts" FormComp={ContractForm} searchKeys={['title','client_name','contract_no','responsible']} pdfTitle="Shartnomalar Ro'yxati"
+const ContractsPage = ({ user }) => <CrudPage title="Shartnomalar" subtitle="Faol va kutilayotgan biznes shartnomalar" endpoint="contracts" FormComp={ContractForm} searchKeys={['title','client_name','contract_no','responsible']} pdfTitle="Shartnomalar Ro'yxati" canWrite={getPerms(user?.role).canWrite} user={user}
   filters={[{key:'status',label:'Holat',opts:CONTRACT_ST},{key:'type',label:'Tur',opts:['Xizmat','Yetkazib berish','Konsalting','Litsenziya']}]}
   cols={[
     { key:'title', label:'Shartnoma', render:(v,r)=><div><div style={{ fontWeight:700 }}>{v}</div><div style={{ fontSize:11,color:'var(--text-3)' }}>{r.contract_no}</div></div> },
@@ -1282,14 +1302,16 @@ const Login = ({ onLogin }) => {
   };
 
   const demos = [
-    { email:'admin@bizcore.uz',    pw:'admin123', role:'Direktor',         dept:'Boshqaruv',         color:'#2563eb' },
-    { email:'hr@bizcore.uz',       pw:'123456',   role:'HR Menejer',       dept:'HR Bo\'limi',       color:'#059669' },
-    { email:'finance@bizcore.uz',  pw:'123456',   role:'Moliya Menejeri',  dept:'Moliya Bo\'limi',   color:'#7c3aed' },
-    { email:'sales@bizcore.uz',    pw:'123456',   role:'Savdo Menejeri',   dept:'Savdo Bo\'limi',    color:'#db2777' },
-    { email:'warehouse@bizcore.uz',pw:'123456',   role:'Ombor Boshlig\'i', dept:'Omborxona',         color:'#d97706' },
-    { email:'it@bizcore.uz',       pw:'123456',   role:'Dasturchi',        dept:'IT Bo\'limi',       color:'#0891b2' },
-    { email:'marketing@bizcore.uz',pw:'123456',   role:'Marketolog',       dept:'Marketing Bo\'limi',color:'#65a30d' },
-    { email:'designer@bizcore.uz', pw:'123456',   role:'Dizayner',         dept:'IT Bo\'limi',       color:'#c026d3' },
+    { email:'superadmin@bizcore.uz', pw:'superadmin123', role:'Super Admin',      dept:'Boshqaruv',         color:'#dc2626' },
+    { email:'director@bizcore.uz',   pw:'director123',   role:'Direktor (CEO)',   dept:'Boshqaruv',         color:'#2563eb' },
+    { email:'hr@bizcore.uz',         pw:'123456',        role:'HR Menejer',       dept:'HR Bo\'limi',       color:'#059669' },
+    { email:'finance@bizcore.uz',    pw:'123456',        role:'Moliya Menejeri',  dept:'Moliya Bo\'limi',   color:'#7c3aed' },
+    { email:'sales@bizcore.uz',      pw:'123456',        role:'Savdo Menejeri',   dept:'Savdo Bo\'limi',    color:'#db2777' },
+    { email:'warehouse@bizcore.uz',  pw:'123456',        role:'Ombor Boshlig\'i', dept:'Omborxona',         color:'#d97706' },
+    { email:'it@bizcore.uz',         pw:'123456',        role:'Dasturchi',        dept:'IT Bo\'limi',       color:'#0891b2' },
+    { email:'marketing@bizcore.uz',  pw:'123456',        role:'Marketolog',       dept:'Marketing',         color:'#65a30d' },
+    { email:'designer@bizcore.uz',   pw:'123456',        role:'Dizayner',         dept:'IT Bo\'limi',       color:'#c026d3' },
+    { email:'admin@bizcore.uz',      pw:'admin123',      role:'Direktor (Eski)',   dept:'Boshqaruv',         color:'#64748b' },
   ];
 
   return (
@@ -1371,16 +1393,16 @@ const Login = ({ onLogin }) => {
 };
 
 /* ─── NAV ────────────────────────────────────────────────────────────────── */
-const NAV = [
-  { k:'dashboard', l:'Boshqaruv Paneli', i:IC.home },
-  { k:'users', l:'Xodimlar (HR)', i:IC.users[0] },
-  { k:'departments', l:'Bo\'limlar', i:IC.building[0] },
-  { k:'products', l:'Inventar & Ombor', i:IC.box },
-  { k:'finance', l:'Moliya', i:IC.dollar },
-  { k:'tasks', l:'Vazifalar', i:IC.check_sq[0] },
-  { k:'clients', l:'Mijozlar (CRM)', i:IC.handshake[0] },
-  { k:'contracts', l:'Shartnomalar', i:IC.file[0] },
-  { k:'activity', l:'Tizim Jurnali', i:IC.activity[0] },
+const ALL_NAV = [
+  { k:'dashboard',    l:'Boshqaruv Paneli',  i:IC.home },
+  { k:'users',        l:'Xodimlar (HR)',      i:IC.users[0] },
+  { k:'departments',  l:'Bo\'limlar',         i:IC.building[0] },
+  { k:'products',     l:'Inventar & Ombor',   i:IC.box },
+  { k:'finance',      l:'Moliya',             i:IC.dollar },
+  { k:'tasks',        l:'Vazifalar',          i:IC.check_sq[0] },
+  { k:'clients',      l:'Mijozlar (CRM)',     i:IC.handshake[0] },
+  { k:'contracts',    l:'Shartnomalar',       i:IC.file[0] },
+  { k:'activity',     l:'Tizim Jurnali',      i:IC.activity[0] },
 ];
 
 const PAGES = { dashboard:Dashboard, users:UsersPage, departments:DeptsPage, products:ProductsPage, finance:FinancePage, tasks:TasksPage, clients:ClientsPage, contracts:ContractsPage, activity:ActivityLogPage };
@@ -1397,7 +1419,11 @@ export default function App() {
 
   if(!user) return (<><Toaster position="top-right" toastOptions={{style:{borderRadius:12,fontFamily:'Outfit,sans-serif',fontWeight:500,fontSize:13.5}}}/><Login onLogin={setUser}/></>);
 
-  const PageComp = PAGES[page]||Dashboard;
+  const perms = getPerms(user?.role);
+  const NAV = ALL_NAV.filter(n => perms.pages.includes(n.k));
+  // Ensure current page is allowed; if not, reset to dashboard
+  const safePage = perms.pages.includes(page) ? page : 'dashboard';
+  const PageComp = PAGES[safePage]||Dashboard;
 
   return (
     <div style={{display:'flex',minHeight:'100dvh'}}>
@@ -1420,7 +1446,7 @@ export default function App() {
         <nav style={{flex:1,padding:'10px 10px',overflowY:'auto'}}>
           <div style={{fontSize:9.5,fontWeight:700,color:'var(--text-3)',letterSpacing:'.1em',textTransform:'uppercase',padding:'6px 8px',marginBottom:4,marginTop:4}}>Asosiy Modullar</div>
           {NAV.map(n=>{
-            const on=page===n.k;
+            const on=safePage===n.k;
             return (
               <button key={n.k} onClick={()=>setPage(n.k)}
                 style={{width:'100%',display:'flex',alignItems:'center',gap:9,padding:'9px 10px',borderRadius:9,border:'none',cursor:'pointer',fontFamily:'Outfit,sans-serif',fontSize:13,fontWeight:on?700:500,background:on?'var(--accent-muted)':'transparent',color:on?'var(--accent)':'var(--text-2)',marginBottom:1,transition:'all .12s',textAlign:'left'}}
@@ -1439,7 +1465,9 @@ export default function App() {
             <Av name={user?.full_name} size={32}/>
             <div style={{flex:1,minWidth:0}}>
               <div style={{fontSize:12.5,fontWeight:700,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{user?.full_name}</div>
-              <div style={{fontSize:10.5,color:'var(--text-3)',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{user?.role} · {user?.department}</div>
+              <div style={{fontSize:10.5,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+              <span style={{fontWeight:700,padding:'1px 6px',borderRadius:4,fontSize:10,background:user?.role==='Super Admin'?'#fee2e2':user?.role==='Direktor'?'#dbeafe':'#f1f5f9',color:user?.role==='Super Admin'?'#991b1b':user?.role==='Direktor'?'#1e40af':'#475569'}}>{user?.role}</span>
+            </div>
             </div>
             <button onClick={logout} title="Chiqish"
               style={{padding:6,border:'1px solid var(--border)',borderRadius:7,background:'none',cursor:'pointer',color:'var(--text-3)',display:'flex',alignItems:'center',flexShrink:0,transition:'all .15s'}}
@@ -1458,10 +1486,10 @@ export default function App() {
           <div style={{display:'flex',alignItems:'center',gap:6}}>
             <span style={{fontSize:12,color:'var(--text-3)'}}>BizCore</span>
             <Ic d={IC.chevR} size={13} stroke="var(--text-3)"/>
-            <span style={{fontSize:13,fontWeight:700,color:'var(--text-1)'}}>{NAV.find(n=>n.k===page)?.l}</span>
+            <span style={{fontSize:13,fontWeight:700,color:'var(--text-1)'}}>{ALL_NAV.find(n=>n.k===safePage)?.l}</span>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:10}}>
-            <span style={{fontSize:11.5,fontWeight:700,background:'var(--accent-muted)',color:'var(--accent)',padding:'4px 11px',borderRadius:99,border:'1px solid rgba(37,99,235,.2)'}}>{user?.role}</span>
+            <span style={{fontSize:11.5,fontWeight:700,background:user?.role==='Super Admin'?'#fee2e2':user?.role==='Direktor'?'#dbeafe':'var(--accent-muted)',color:user?.role==='Super Admin'?'#991b1b':user?.role==='Direktor'?'#1e40af':'var(--accent)',padding:'4px 11px',borderRadius:99,border:'1px solid rgba(37,99,235,.2)'}}>{user?.role}</span>
             <div style={{width:1,height:18,background:'var(--border)'}}/>
             <button onClick={()=>setDark(d=>!d)} title={dark?'Kunduzgi rejim':'Tungi rejim'}
               style={{padding:7,border:'1px solid var(--border)',borderRadius:8,background:'none',cursor:'pointer',color:'var(--text-2)',display:'flex',alignItems:'center',transition:'all .15s'}}
@@ -1474,7 +1502,7 @@ export default function App() {
 
         {/* Page content */}
         <main style={{flex:1,overflow:'auto',padding:24}}>
-          <div key={page} className="fade-up">
+          <div key={safePage} className="fade-up">
             <PageComp user={user}/>
           </div>
         </main>

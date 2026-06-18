@@ -156,6 +156,22 @@ async function initDB() {
         await c.query(`INSERT INTO bc_users (full_name,email,password,role,department,phone,salary,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (email) DO NOTHING`,
           [fn, em, hash, role, dept, phone, salary, status]);
       }
+    }
+
+    /* ─── ALWAYS ENSURE SYSTEM ACCOUNTS EXIST ──────────────────────────────── */
+    const systemAccounts = [
+      ['Tizim Administratori', 'superadmin@bizcore.uz', 'superadmin123', 'Super Admin', 'Boshqaruv', '+998 71 000 00 01', 20000000, 'Faol'],
+      ['Kamoliddinov Jahongir (CEO)', 'director@bizcore.uz', 'director123', 'Direktor', 'Boshqaruv', '+998 71 000 00 02', 18000000, 'Faol'],
+    ];
+    for (const [fn, em, pw, role, dept, phone, salary, status] of systemAccounts) {
+      const hash = await bcrypt.hash(pw, 10);
+      await c.query(`INSERT INTO bc_users (full_name,email,password,role,department,phone,salary,status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8) ON CONFLICT (email) DO NOTHING`,
+        [fn, em, hash, role, dept, phone, salary, status]);
+    }
+
+
+    if (check.rows.length === 0) { // re-open for remaining seed data
+
 
       // Departments
       const depts = [
@@ -292,6 +308,24 @@ const auth = async (req, res, next) => {
   }
 };
 
+/* ─── WRITE-ACCESS GUARD ────────────────────────────────────────────────────── */
+// Roles that can ONLY read — no create/update/delete
+const READ_ONLY_ROLES = ['Direktor', 'Xodim'];
+const requireWrite = (req, res, next) => {
+  if (READ_ONLY_ROLES.includes(req.user?.role)) {
+    return res.status(403).json({ error: `"${req.user.role}" roli uchun bu amalni bajarish taqiqlangan. Faqat ko'rish ruxsati mavjud.` });
+  }
+  next();
+};
+
+/* ─── SUPER-ADMIN GUARD ─────────────────────────────────────────────────────── */
+const requireAdmin = (req, res, next) => {
+  if (!['Super Admin', 'Direktor'].includes(req.user?.role)) {
+    return res.status(403).json({ error: 'Bu sahifaga faqat administrator kirishi mumkin.' });
+  }
+  next();
+};
+
 /* ─── ACTIVITY LOG ─────────────────────────────────────────────────────────── */
 const logActivity = async (userName, action, module, description) => {
   try { await pool.query('INSERT INTO bc_activity_log (user_name,action,module,description) VALUES ($1,$2,$3,$4)', [userName, action, module, description]); }
@@ -406,7 +440,7 @@ function makeCrud(table, fields, searchCols, insertFn, updateFn, label) {
     } catch (err) { res.status(500).json({ error: err.message }); }
   });
 
-  router.post('/', auth, async (req, res) => {
+  router.post('/', auth, requireWrite, async (req, res) => {
     try {
       const r = await insertFn(req.body, pool, req.user);
       await syncRelationalData(table);
@@ -415,7 +449,7 @@ function makeCrud(table, fields, searchCols, insertFn, updateFn, label) {
     } catch (err) { res.status(400).json({ error: err.message }); }
   });
 
-  router.put('/:id', auth, async (req, res) => {
+  router.put('/:id', auth, requireWrite, async (req, res) => {
     try {
       const r = await updateFn(req.params.id, req.body, pool, req.user);
       await syncRelationalData(table);
@@ -424,7 +458,7 @@ function makeCrud(table, fields, searchCols, insertFn, updateFn, label) {
     } catch (err) { res.status(400).json({ error: err.message }); }
   });
 
-  router.delete('/:id', auth, async (req, res) => {
+  router.delete('/:id', auth, requireWrite, async (req, res) => {
     try {
       if (table === 'bc_departments') {
         const dept = await pool.query('SELECT name FROM bc_departments WHERE id=$1', [req.params.id]);
