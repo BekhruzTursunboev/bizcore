@@ -1,70 +1,54 @@
-# MedUz ERP - BMI Himoyasi Uchun To'liq Qo'llanma
+# BizCore ERP - BMI Himoyasi Uchun To'liq Qo'llanma
 
-Ushbu hujjat **MedUz ERP** loyihasining qanday ishlashi, uning ichki arxitekturasi va kodlarini to'liq va sodda tilda (lekin ilmiy darajada) tushuntirib beradi. Siz ushbu hujjatdan Bitiruv Malakaviy Ishi (BMI) himoyasi paytida komissiya savollariga javob berishda bemalol foydalanishingiz mumkin.
+Ushbu hujjat **BizCore ERP** loyihasining qanday ishlashi, uning ichki arxitekturasi va kodlarini to'liq va sodda tilda (lekin ilmiy darajada) tushuntirib beradi. Siz ushbu hujjatdan Bitiruv Malakaviy Ishi (BMI) himoyasi paytida komissiya savollariga javob berishda bemalol foydalanishingiz mumkin.
 
 ---
 
 ## 1. Loyiha Maqsadi va Dolzarbligi
 
-**Maqsad:** Shifoxona va klinikalardagi byurokratiya va qog'ozbozlikni yo'q qilish, bemorlar, navbatlar, xodimlar hamda moliya tushumlarini bitta raqamlashtirilgan markazdan boshqarish.
+**Maqsad:** Korxonalardagi byurokratiya va qog'ozbozlikni yo'q qilish, xodimlar (HR), moliya ko'rsatkichlari, ombor inventari, vazifalar, mijozlar va shartnomalarni bitta markazlashgan ekotizimdan boshqarish.
 
-Hozirgi kunda ko'plab klinikalar ma'lumotlarni Excel yoki eskirgan lokal dasturlarda saqlaydi. Bu loyiha esa **Bulutli (Cloud)** texnologiyalar va **Taqsimlangan (Microservices)** arxitektura orqali yuqori xavfsizlik va barqarorlikni ta'minlaydi.
-
----
-
-## 2. Tizim Arxitekturasi (God-Tier Microservices)
-
-Loyihaning komissiyani eng lol qoldiradigan qismi uning **Mikroservislar arxitekturasi** asosida qurilganligidadir. Odatda talabalar barcha kodlarni bitta joyga (Monolith) yozib qo'yishadi. Lekin bu tizim haqiqiy yirik IT kompaniyalaridek 5 ta alohida serverlarga bo'lingan:
-
-1. **API Gateway (Kirish darvozasi):** Barcha so'rovlar (masalan Bemor qo'shish) avval Gateway'ga keladi va u so'rovni kerakli Mikroservisga yo'naltiradi.
-2. **Patient Service (Bemorlar xizmati):** Bemorlarning kasallik tarixi va kontaktlarini saqlaydi.
-3. **Appointment Service (Navbatlar xizmati):** Shifokor qabullariga vaqt belgilashni boshqaradi.
-4. **Staff Service (Xodimlar xizmati):** Shifokor va hamshiralarning ma'lumotlari bilan ishlaydi.
-5. **Billing Service (Moliya xizmati):** Kassa tushumlari, qarzlar va to'lovlarni hisoblaydi.
-
-> **Komissiyaga shunday tushuntiring:** "Agar kasalxonada to'lovlar tizimi (Billing) ishdan chiqsa, butun dastur qotib qolmaydi. Mikroservis bo'lgani uchun qolgan qismlar (masalan, Bemor qo'shish yoki Navbatga yozilish) ishlashda davom etaveradi. Bu arxitekturaning eng katta yutug'idir!"
+Hozirgi kunda ko'plab o'rta va yirik korxonalar ma'lumotlarni Excel yoki eskirgan lokal dasturlarda tarqoq holda saqlaydi. BizCore esa zamonaviy bulutli texnologiyalar va taqsimlangan SQL CockroachDB bazasi orqali yuqori xavfsizlik, tezlik va barqarorlikni ta'minlaydi.
 
 ---
 
-## 3. Ma'lumotlar Bazasi va Cross-Device Sinxronizatsiya
+## 2. Tizim Arxitekturasi va Rollar (Multi-role Administration)
 
-Loyihaning Backend qismi **CockroachDB** da ishlashga mo'ljallangan. Ammo, himoya jarayonida domlalar dasturni o'z telefonlari yoki turli kompyuterlarda tezkor ochib ko'rishlari uchun noyob gibrid yondashuv qo'llanilgan.
-
-**`safeApi` texnologiyasi:**
-Dastur kodlarida `safeApi` nomli maxsus o'zgaruvchi yaratilgan.
-U qanday ishlaydi?
-1. Dastur avval lokal Mikroservisga ulanishga harakat qiladi.
-2. Agar lokal server o'chirilgan bo'lsa (yoki telefondan kirilsa), dastur xato bermaydi!
-3. U avtomat tarzda **Global Cloud JSON DB** (REST API) ga ulanadi.
-
-Bu nima degani? Siz kompyuteringizda turib yangi Bemor qo'shsangiz, u butun dunyo bo'ylab bulutga saqlanadi. Domla xuddi shu zaxoti Vercel havolasiga telefondan kirsa, u o'sha bemorni aniq ko'radi. Bularning barchasi soniyaning yuzdan bir bo'lagida sinxronlashadi!
+Tizimda rollarga asoslangan ruxsatlar (Role-Based Access Control — RBAC) o'rnatilgan bo'lib, foydalanuvchilar o'z rollariga mos menyularni ko'radilar:
+- **Direktor (Admin):** Tizimdagi eng katta vakolatga ega rol. Barcha moliyaviy tushumlar, oylik va haftalik grafik analitikalar, xodimlarni boshqarish va bo'limlar byudjetini tasdiqlash huquqiga ega.
+- **Menejerlar (HR, Moliya, Savdo):** O'zlarining professional modullari bo'yicha cheklangan, lekin to'liq CRUD operatsiyalarini boshqara oladigan hisoblar (masalan: HR Menejer xodimlarni boshqaradi, Savdo Menejeri mijozlar va kontraktlar bilan ishlaydi).
+- **Xodim (Xodimlar):** Tizimda o'ziga yuklatilgan vazifalarni (Tasks) ko'radi, bajarilish foizini yangilaydi hamde shartnomalarni tahrirlay oladi.
 
 ---
 
-## 4. Frontend va Interfeys (UI/UX)
+## 3. Loyihadagi "Murakkab va God-Tier" Xususiyatlar
 
-Klinika boshqaruv interfeysi foydalanishga juda qulay qilib yozilgan.
+### A. Interaktiv Kanban Board (Vazifalar nazorati)
+Ko'p talabalar oddiy jadvallar ko'rsatishadi. BizCore ilovasida esa vazifalar sahifasida **Jadval va Kanban** ko'rinishlari joriy etilgan. Kanban rejimida vazifalar real-time holatlarga (Yangi, Jarayonda, Bajarildi, Bekor qilindi) ajraladi va kartochkalar pastidagi tezkor tugmalar orqali holati zudlik bilan bazada yangilanadi. Bu loyihani boshqarishning eng ilg'or uslubidir.
 
-- **Texnologiya:** Dastur eng tezkor **React.js (Vite)** kutubxonasida yaratilgan.
-- **Dizayn qismi:** Material-UI (MUI) orqali professional, zamonaviy va sodda (minimalistik) dizayn tuzilgan. Dastur Qorong'u (Dark) va Yorug' (Light) rejimlarni qo'llab-quvvatlaydi.
-- **Analitika (Recharts):** Bosh sahifadagi barcha grafiklar (Daromad chiziqlari, Xodimlar taqsimoti, Bemorlar holati aylanasi) qotib qolgan rasm emas. Ular haqiqiy kiritilayotgan ma'lumotlarga qarab raqamlarni avtomatik o'zgartiruvchi **Aqlli Grafiklar** dir.
+### B. Relational Integrity (Mijoz va Shartnoma bog'liqligi)
+Mijozlar (CRM) va Shartnomalar modullari o'rtasida ma'lumotlar yaxlitligi ta'minlangan:
+1. Yangi kontrakt tuzayotganda mijoz nomi qo'lda yozilmaydi, bu xatoliklarni oldini olish uchun bazadagi mijozlar ro'yxatidan (Dropdown Select) tanlanadi.
+2. Mijoz batafsil profili ko'rilganda, dastur avtomatik tarzda ushbu mijozga biriktirilgan barcha shartnomalarni yig'ib jadval ko'rinishida taqdim etadi.
 
-**Dinamic Selectors:** Dasturdagi "Shifokor" ni tanlash qutisi (Dropdown) statik yozilmagan. Dastur avval Xodimlar (Staff) ro'yxatini o'qiydi va faqatgina lavozimi "Shifokor" bo'lgan xodimlarnigina bemorga biriktirish uchun ajratib beradi. Bu **Relational Data (Bog'langan ma'lumotlar)** tamoyilining amaliy isbotidir.
+### C. Premium Analitika (Gradientli AreaChart)
+Bosh sahifada Recharts kutubxonasi yordamida kirim va chiqim oqimi gradient ranglar (AreaChart) yordamida chiziladi. Grafiklar statik rasm emas, ma'lumotlar o'zgarganda avtomatik o'zgaruvchi interaktiv komponentlardir.
 
----
-
-## 5. Himoyada Tushishi Mumkin Bo'lgan Savollar va Javoblar
-
-**Savol: Nega PostgreSQL emas, aynan CockroachDB ishlatdingiz?**
-**Javob:** CockroachDB PostgreSQL ga juda o'xshash, lekin u yirik yuklanishlar (HighLoad) uchun mo'ljallangan taqsimlangan (distributed) baza hisoblanadi. Agar kasalxona filillari ko'payib ketsa, serverlar bir-biriga ulanib ma'lumotlarni hech qanday yo'qotishlarsiz saqlashda davom etadi.
-
-**Savol: Nima uchun pul o'lchovini dollarda emas, so'mda qildingiz va formatni qanday qildingiz?**
-**Javob:** O'zbekiston miqyosida foydalanishga moslashtirish uchun milliy valyutamiz – so'mga o'tkazdim. Summani o'qish qulay bo'lishi uchun esa `Intl.NumberFormat('uz-UZ')` funksiyasidan foydalanib, pulni mingliklarga (masalan: 1 000 000 so'm) ajratib ko'rsatadigan qildim.
-
-**Savol: Ushbu tizimni haqiqiy poliklinikaga ishlatsa bo'ladimi?**
-**Javob:** Albatta! Tizim asosiy qolip sifatida to'liq tayyor. Unga shunchaki tibbiy retseptlar bazasi va telegram bot qo'shilsa (bemorlarga SMS yuborish uchun), bemalol xususiy klinikalarga sotib joriy etish mumkin.
+### D. Corporate PDF Generator (Jamlangan Hisobotlar)
+Barcha jadvallarda taqdim etilgan PDF tugmasi oddiy ro'yxat emas, balki korporativ hujjat yaratadi:
+- Yuqori qismida ko'k rangli sarlavha paneli;
+- Moliyaviy va statistik jamlanmalar (Jami summalar, balans, inventar qiymati va h.k.);
+- Qulay jadval va chop etgan operator hamda sana ko'rsatiladi.
 
 ---
 
-**[Yakuniy xulosa]**
-Sizning BMI himoyangiz nafaqat dasturlash kodlari bilan, balki ana shunday zamonaviy yechimlar va arxitektura orqali baholanadi. MedUz ERP tizimi o'zining mustahkam backend arxitekturasi va tezkor frontend qismi bilan komissiya a'zolarini to'liq qoniqtira oladi.
+## 4. Himoyada Kutiladigan Savollar va Javoblar
+
+**Savol: Nega standart PostgreSQL emas, CockroachDB ishlatdingiz?**
+**Javob:** "CockroachDB PostgreSQL API bilan mos keladigan, lekin undan farqli o'laroq HighLoad va taqsimlangan (distributed) SQL baza hisoblanadi. Korxona kelajakda viloyatlarda filial ochsa, CockroachDB serverlarni geografik bog'lab, ma'lumotlarni uzilishlarsiz yagona tizimda sinxronlashtirish imkonini beradi."
+
+**Savol: CRM va shartnomalar bog'liqligini qanday ta'minladingiz?**
+**Javob:** "Mijozning unikal nomi (Company Name) orqali shartnomalar jadvalidagi `client_name` ustunini bog'ladim. Har safar mijoz profili ochilganda frontend mijoz nomiga mos shartnomalarni API orqali so'rab oladi va interaktiv tarzda ko'rsatadi. Bu ma'lumotlar yaxlitligini ko'rsatib beradi."
+
+**Savol: Ushbu tizimni real biznesda ishlatsa bo'ladimi?**
+**Javob:** "Albatta. Tizim to'liq CRUD (Create, Read, Update, Delete) operatsiyalari, ma'lumotlarni validatsiya qilish, kiberxavfsizlik (JWT auth, bcrypt parol shifrlash) va hisobotlarni PDF yuklash imkoniyatlari bilan ta'minlangan. Faqat buxgalteriya hisobi va SMS-eslatmalar qo'shilsa, real korxonada bemalol qo'llash mumkin."

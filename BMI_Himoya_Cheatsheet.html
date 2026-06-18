@@ -2,70 +2,65 @@
 <html lang="uz">
 <head>
     <meta charset="UTF-8">
-    <title>MedUz ERP - BMI Himoya Shpargalkasi</title>
+    <title>BizCore ERP - BMI Himoya Shpargalkasi</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
-        h1 { color: #2c3e50; border-bottom: 2px solid #3498db; padding-bottom: 10px; }
-        h2 { color: #2980b9; margin-top: 30px; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #2563eb; padding-bottom: 10px; }
+        h2 { color: #2563eb; margin-top: 30px; }
         ul { margin-bottom: 20px; }
         li { margin-bottom: 10px; }
-        .highlight { background-color: #f1f8ff; border-left: 4px solid #3498db; padding: 15px; margin: 20px 0; border-radius: 4px; font-style: italic; }
+        .highlight { background-color: #f1f8ff; border-left: 4px solid #2563eb; padding: 15px; margin: 20px 0; border-radius: 4px; font-style: italic; }
         .qa-box { background-color: #fffaf0; border-left: 4px solid #f39c12; padding: 15px; margin: 20px 0; }
         strong { color: #2c3e50; }
     </style>
 </head>
 <body>
 
-    <h1>MedUz ERP - BMI Himoya Shpargalkasi (Cheatsheet)</h1>
+    <h1>BizCore ERP - BMI Himoya Shpargalkasi (Cheatsheet)</h1>
 
     <h2>1. Loyiha Maqsadi va Dolzarbligi</h2>
-    <p><strong>"MedUz ERP"</strong> — bu kasalxona va xususiy klinikalarni to'liq raqamlashtirish uchun mo'ljallangan, bulutli (Cloud) texnologiyalarga asoslangan zamonaviy boshqaruv tizimidir.</p>
+    <p><strong>"BizCore ERP"</strong> — bu korxona va tashkilotlarning barcha ichki resurslari va operatsiyalarini boshqarish hamda raqamlashtirish uchun mo'ljallangan bulutli ERP boshqaruv tizimidir.</p>
     <ul>
-        <li><strong>Asosiy maqsad:</strong> Qog'ozbozlikni yo'q qilish. Bemorlar, navbatlar, xodimlar va moliya tushumlarini yagona, shaffof tizim orqali avtomatlashtirilgan holda boshqarish.</li>
+        <li><strong>Asosiy maqsad:</strong> Qog'ozbozlikni yo'q qilish, HR (Xodimlar), Moliya, Inventar, CRM va Kontraktlarni yagona, shaffof tizim orqali avtomatlashtirilgan holda boshqarish.</li>
     </ul>
 
     <h2>2. Tizim Arxitekturasi (Qanday qurilgan?)</h2>
-    <p><em>Ushbu loyihaning eng katta ilmiy va amaliy yutug'i — u odatiy Monolit emas, balki yirik IT kompaniyalardek <strong>Mikroservislar arxitekturasi (Microservices Architecture)</strong> asosida qurilganligidir.</em></p>
+    <p><em>Ushbu loyihaning eng katta amaliy yutug'i — u to'liq integratsiyalashgan, 8 ta mustaqil modullarni birlashtirgan <strong>Ko'p modulli (Multi-module) tizim arxitekturasi</strong> asosida qurilganligidir.</em></p>
     
-    <p>Backend bir-biri bilan TCP transport orqali ishlovchi <strong>5 ta mustaqil xizmatga</strong> bo'lingan:</p>
+    <p>Tizim arxitekturasi steki:</p>
     <ol>
-        <li><strong>API Gateway:</strong> Barcha so'rovlarni qabul qilib, kerakli xizmatlarga xavfsiz yo'naltiradi.</li>
-        <li><strong>Patient Service:</strong> Bemorlarning ma'lumotlari va kasallik tarixini qayta ishlaydi.</li>
-        <li><strong>Appointment Service:</strong> Shifokor qabullariga navbatga yozilishni nazorat qiladi.</li>
-        <li><strong>Staff Service:</strong> Klinika xodimlari va ularning lavozimlarini boshqaradi.</li>
-        <li><strong>Billing Service:</strong> To'lovlar, qarzlar va kassa tushumlarini hisoblaydi.</li>
+        <li><strong>Frontend (Mijoz qismi):</strong> React.js va Vite orqali o'ta tezkor interfeys yig'ilgan. Analitika uchun Recharts, PDF hisobotlar uchun esa jsPDF va autoTable ishlatilgan.</li>
+        <li><strong>Backend (Server qismi):</strong> Node.js Express yordamida yozilgan tezkor REST API server.</li>
+        <li><strong>Ma'lumotlar bazasi:</strong> CockroachDB (Taqsimlangan, yuqori xavfsizlikka ega relational SQL ma'lumotlar bazasi).</li>
     </ol>
 
     <div class="highlight">
-        <strong>Asosiy Argument (Komissiyaga):</strong> "Mikroservis arxitekturasining afzalligi shuki, agar Moliya (Billing) serverida nosozlik chiqsa ham, butun tizim qotib qolmaydi. Bemorlarni ro'yxatga olish yoki navbatga yozish ishlashda davom etaveradi. Bu 24/7 barqaror ishlashni ta'minlaydi."
+        <strong>Asosiy Argument (Komissiyaga):</strong> "Ushbu arxitekturada har bir modul bir-biri bilan bog'langan bo'lsa-da, backend yagona bazada tranzaksiyalar yaxlitligini ta'minlaydi. Ya'ni ma'lumotlar uzluksiz sinxronlashadi va markaziy ma'lumotlar omborida ishonchli saqlanadi."
     </div>
 
-    <h2>3. Texnologiyalar Steki (Nimalardan foydalanilgan?)</h2>
+    <h2>3. Loyihaning O'ziga Xosligi va Murakkablik Elementlari</h2>
     <ul>
-        <li><strong>Frontend:</strong> <strong>Vite</strong> va <strong>React.js</strong> (yuqori tezlik uchun). Dizayn uchun <strong>Material-UI (MUI)</strong>, jonli grafiklar uchun <strong>Recharts</strong>.</li>
-        <li><strong>Backend:</strong> <strong>NestJS</strong> freymvorki (TypeScript va RxJS asosida).</li>
-        <li><strong>Ma'lumotlar bazasi:</strong> <strong>CockroachDB</strong> (Yuqori yuklanishlarga mo'ljallangan taqsimlangan SQL baza).</li>
-        <li><strong>Infratuzilma:</strong> <strong>Docker</strong> va <strong>Docker Compose</strong>, frontend xostingi uchun <strong>Vercel</strong>.</li>
+        <li><strong>Interaktiv Kanban Taxtasi (Tasks Kanban):</strong> Vazifalar bo'limida foydalanuvchi jadval va Kanban ko'rinishlarini almashtira oladi. Kanban ko'rinishida vazifalar holati bo'yicha ustunlarga ajraladi va kartalarni bitta tugma orqali boshqa holatga o'tkazish mumkin.</li>
+        <li><strong>Relational CRM-Contracts Bog'lanishi:</strong> Shartnoma qo'shishda mijoz nomi qo'lda yozilmaydi, mijozlar bazasidan dropdown orqali tanlanadi. Mijoz profili ochilganda unga tegishli barcha shartnomalar jadvali ko'rsatiladi.</li>
+        <li><strong>Dinamik Cashflow AreaChart:</strong> Bosh sahifadagi grafik kirim va chiqim oqimini zamonaviy va yorqin gradientlar yordamida tasvirlaydi.</li>
+        <li><strong>Professional PDF Hisobotlar (Export to PDF):</strong> Hisobotlar yuqori qismida ko'k rangli banner, operator ma'lumotlari va moliyaviy/miqdoriy jamlanmalar (Total summary stats) qo'shilgan.</li>
     </ul>
 
-    <h2>4. Loyihaning O'ziga Xosligi va Universalligi</h2>
-    <ul>
-        <li><strong>Gibrid baza (<code>safeApi</code> texnologiyasi):</strong> Dastur avval lokal serverga ulanadi. Agar u o'chiq bo'lsa (masalan, telefondan kirganda), tizim xato bermasdan avtomatik <strong>Global Cloud JSON DB</strong> ga ulanadi. Ma'lumotlar barcha qurilmalarda uzilishlarsiz sinxronlashadi.</li>
-        <li><strong>Dinamik UI:</strong> "Bemorga navbat olish" bo'limida tizim avtomat ravishda faqat "Shifokor" lavozimidagi xodimlarnigina ko'rsatadi (Bog'langan ma'lumotlar isboti).</li>
-        <li><strong>Mahalliylashtirish:</strong> Pul aylanmasi dollarda emas, O'zbek so'mida yuritiladi va mingliklarga ajratiladi (<code>1 000 000 so'm</code>).</li>
-        <li><strong>PDF Hisobotlar:</strong> Qilingan to'lovlar, qarzdorliklar va bemor ro'yxatlarini bitta tugma bilan <strong>PDF shaklida chop etish</strong> (Export to PDF) xususiyati mavjud.</li>
-    </ul>
-
-    <h2>5. Himoyada Kutiladigan Savollarga Javoblar</h2>
+    <h2>4. Himoyada Kutiladigan Savollarga Javoblar</h2>
 
     <div class="qa-box">
         <p><strong>Savol: Nega standart PostgreSQL emas, CockroachDB ishlatdingiz?</strong></p>
-        <p><strong>Javob:</strong> "CockroachDB PostgreSQL'ga o'xshash, lekin u taqsimlangan va HighLoad tizimlar uchun yozilgan. Agar klinika kelajakda viloyatlarda filial ochsa, CockroachDB serverlarni bir-biriga bog'lab, ma'lumotlarni hech qanday yo'qotishlarsiz yagona bazada saqlash imkonini beradi."</p>
+        <p><strong>Javob:</strong> "CockroachDB PostgreSQL API bilan mos keladigan, lekin undan farqli o'laroq HighLoad va taqsimlangan (distributed) SQL baza hisoblanadi. Korxona kelajakda viloyatlarda filial ochsa, CockroachDB serverlarni geografik bog'lab, ma'lumotlarni uzilishlarsiz yagona tizimda sinxronlashtirish imkonini beradi."</p>
     </div>
 
     <div class="qa-box">
-        <p><strong>Savol: Bu tizimni amaliyotda (haqiqiy poliklinikaga) joriy qilsa bo'ladimi?</strong></p>
-        <p><strong>Javob:</strong> "Albatta. Tizim poydevori 100% tayyor. Unga faqat tibbiy retseptlar (dori-darmon) moduli va bemorlarga SMS eslatma uchun Telegram bot ulasak, loyihani bemalol xususiy klinikalarga tijoriy maqsadda joriy etish mumkin."</p>
+        <p><strong>Savol: CRM va shartnomalar bog'liqligini qanday ta'minladingiz?</strong></p>
+        <p><strong>Javob:</strong> "Mijozning unikal nomi (Company Name) orqali shartnomalar jadvalidagi client_name ustunini bog'ladim. Har safar mijoz profili ochilganda frontend mijoz nomiga mos shartnomalarni API orqali so'rab oladi va interaktiv tarzda ko'rsatadi. Bu ma'lumotlar yaxlitligini ko'rsatib beradi."</p>
+    </div>
+
+    <div class="qa-box">
+        <p><strong>Savol: Bu tizimni amaliyotda joriy qilsa bo'ladimi?</strong></p>
+        <p><strong>Javob:</strong> "Albatta. Tizim poydevori 100% tayyor. Tizim to'liq CRUD amallari, ma'lumotlarni validatsiya qilish, kiberxavfsizlik (JWT auth, bcrypt parol shifrlash) va hisobotlarni PDF yuklash imkoniyatlari bilan ta'minlangan. Faqat buxgalteriya hisobi va SMS-eslatmalar qo'shilsa, real korxonada bemalol qo'llash mumkin."</p>
     </div>
 
 </body>

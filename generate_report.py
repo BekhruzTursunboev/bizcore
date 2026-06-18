@@ -61,7 +61,7 @@ set_font_times_new_roman(r2, 24, True)
 
 p3 = doc.add_paragraph()
 p3.alignment = WD_ALIGN_PARAGRAPH.CENTER
-r3 = p3.add_run("Mavzu: Zamonaviy tibbiyot markazlari uchun ko'p modulli (Multi-role) elektron boshqaruv (ERP) tizimini React va web-texnologiyalar asosida ishlab chiqish\n\n\n")
+r3 = p3.add_run("Mavzu: Ko'p modulli korxona resurslarini boshqarish (ERP) tizimi arxitekturasi va dasturiy ta'minotini React, Node.js va CockroachDB asosida ishlab chiqish\n\n\n")
 set_font_times_new_roman(r3, 16, True)
 
 doc.add_page_break()
@@ -70,16 +70,16 @@ doc.add_page_break()
 add_heading(doc, "MUNDARIJA")
 toc_lines = [
     ("KIRISH", "3"),
-    ("I-BOB. TIBBIYOT AXBOROT TIZIMLARINING NAZARIY ASOSLARI", "7"),
-    ("1.1. Tibbiyot ERP tizimlarining rivojlanishi va tasnifi", "7"),
-    ("1.2. Zamonaviy tibbiyot boshqaruv tizimlarining asosiy afzalliklari", "15"),
+    ("I-BOB. KORXONA BOSHQARUV (ERP) TIZIMLARINING NAZARIY ASOSLARI", "7"),
+    ("1.1. Korxona resurslarini rejalashtirish (ERP) tizimlarining rivojlanishi va tasnifi", "7"),
+    ("1.2. Zamonaviy korxona boshqaruv tizimlarining asosiy afzalliklari", "15"),
     ("1.3. Mavjud ERP platformalarining qiyosiy tahlili", "25"),
     ("II-BOB. TIZIM TALABLARI VA TEXNOLOGIYALAR", "35"),
     ("2.1. Tizimga qo'yiladigan funksional va texnik talablar", "35"),
-    ("2.2. Apparat va dasturiy platformalarni tanlash asoslari (React.js, Material UI)", "42"),
-    ("2.3. Boshqaruv algoritmlari va RBAC (Multi-role) arxitekturasi", "50"),
+    ("2.2. Apparat va dasturiy platformalarni tanlash asoslari (React.js, Node.js, CockroachDB)", "42"),
+    ("2.3. Rollarga asoslangan ruxsatlar boshqaruvi (RBAC) arxitekturasi", "50"),
     ("III-BOB. TIZIMNI LOYIHALASH VA AMALGA OSHIRISH", "60"),
-    ("3.1. Tizim arxitekturasini yaratish va modullar tavsifi", "60"),
+    ("3.1. BizCore ERP tizim arxitekturasini yaratish va modullar tavsifi", "60"),
     ("3.2. Dasturiy ta'minotni ishlab chiqish jarayoni va qulay interfeys", "68"),
     ("3.3. Tizimni sinovdan o'tkazish va natijalarni tahlil qilish", "75"),
     ("IV-BOB. MEHNAT MUHOFAZASI VA XAVFSIZLIK", "82"),
@@ -113,27 +113,27 @@ def generate_filler(base_texts, repetitions):
 # Introduction
 add_heading(doc, "KIRISH")
 intro_texts = [
-    "Zamonaviy axborot texnologiyalarining shiddat bilan rivojlanishi barcha sohalarda bo'lgani kabi tibbiyot va sog'liqni saqlash sohasida ham tub burilishlarni yuzaga keltirmoqda. Bugungi kunda klinikalar va shifoxonalarni boshqarish, bemorlar hisobini yuritish, shifokorlar ish jadvalini nazorat qilish va moliyaviy oqimlarni tahlil etish uchun raqamli ERP (Enterprise Resource Planning) tizimlarining ahamiyati beqiyos.",
-    "Ayniqsa, 'Raqamli O'zbekiston - 2030' strategiyasi doirasida tibbiyot muassasalarida axborot-kommunikatsiya texnologiyalarini keng joriy etish orqali aholiga sifatli va tezkor tibbiy xizmat ko'rsatish davlat siyosatining ustuvor yo'nalishlaridan biri etib belgilangan. Shu nuqtai nazardan, ushbu bitiruv malakaviy ishida (BMI) ko'p modulli (Multi-role) arxitekturaga ega bo'lgan innovatsion tibbiyot ERP tizimini (MedUZ-ERP) React.js kabi eng ilg'or web-texnologiyalar asosida noldan ishlab chiqish va amaliyotga tatbiq etish masalalari har tomonlama tadqiq qilingan.",
-    "Tadqiqotning obyekti sifatida tibbiyot markazlaridagi ma'lumotlar almashinuvi, kadrlar va bemorlar nazorati jarayonlari olindi. Tizimning o'ziga xosligi shundaki, u bir qancha foydalanuvchi rollarini (Admin, Shifokor, Qabulxona xodimi) yagona markazlashgan ekotizimda birlashtiradi. Bu tizim orqali qabulxona xodimlari bemorlarni navbatga yozadi, shifokorlar o'zlarining kasallik tarixlarini to'ldiradi, Bosh shifokor (Admin) esa butun jarayonni moliyaviy va statistik jihatdan to'liq nazorat qiladi."
+    "Zamonaviy axborot texnologiyalarining shiddat bilan rivojlanishi barcha sohalarda bo'lgani kabi korxona va tashkilotlarni boshqarish sohasida ham tub burilishlarni yuzaga keltirmoqda. Bugungi kunda korxona resurslarini boshqarish, xodimlar va kadrlar hisobini yuritish, vazifalarni taqsimlash va moliyaviy oqimlarni tahlil etish uchun raqamli ERP (Enterprise Resource Planning) tizimlarining ahamiyati beqiyos.",
+    "Ayniqsa, 'Raqamli O'zbekiston - 2030' strategiyasi doirasida iqtisodiyot tarmoqlari va korxonalarni raqamlashtirish, boshqaruv samaradorligini oshirish davlat siyosatining ustuvor yo'nalishlaridan biri etib belgilangan. Shu nuqtai nazardan, ushbu bitiruv malakaviy ishida (BMI) ko'p modulli (Multi-role) arxitekturaga ega bo'lgan innovatsion korxona boshqaruv ERP tizimini (BizCore ERP) React.js kabi eng ilg'or web-texnologiyalar va CockroachDB ma'lumotlar bazasi asosida noldan ishlab chiqish va amaliyotga tatbiq etish masalalari har tomonlama tadqiq qilingan.",
+    "Tadqiqotning obyekti sifatida korxonalardagi resurslarni boshqarish, kadrlar, inventar, mijozlar bilan munosabatlar (CRM) va shartnomalar jarayonlari olindi. Tizimning o'ziga xosligi shundaki, u bir qancha foydalanuvchi rollarini (Direktor, Menejer, Xodim) yagona markazlashgan ekotizimda birlashtiradi. Bu tizim orqali xodimlar o'z vazifalarini va shartnomalarini nazorat qiladi, menejerlar tegishli bo'limlar byudjeti va inventarlarini boshqaradi, Direktor esa butun jarayonni moliyaviy va statistik jihatdan to'liq nazorat qiladi."
 ]
 generate_filler(intro_texts, 12)
 doc.add_page_break()
 
 # Chapter 1
-add_heading(doc, "I-BOB. TIBBIYOT AXBOROT TIZIMLARINING NAZARIY ASOSLARI")
-add_heading(doc, "1.1. Tibbiyot ERP tizimlarining rivojlanishi va tasnifi", level=2)
+add_heading(doc, "I-BOB. KORXONA BOSHQARUV (ERP) TIZIMLARINING NAZARIY ASOSLARI")
+add_heading(doc, "1.1. Korxona resurslarini rejalashtirish (ERP) tizimlarining rivojlanishi va tasnifi", level=2)
 ch1_texts = [
-    "Tibbiyotda elektron axborot tizimlarining (Medical Information Systems) rivojlanish tarixi asosan XX asrning ikkinchi yarmiga borib taqaladi. Dastlabki tizimlar asosan lokal kompyuter tarmoqlarida ishlagan va faqatgina oddiy matnli ma'lumotlarni saqlash, qidirish kabi funksiyalarga ega bo'lgan.",
-    "Ammo texnologiya rivojlangani sari, monolitik tizimlardan bulutli va taqsimlangan mikroxizmatlar arxitekturasiga o'tish zaruriyati tug'ildi. Hozirgi kunda bulutli (Cloud-based) tibbiyot axborot tizimlari shifokorlarga istalgan joydan turib bemorlar ma'lumotlariga xavfsiz va tezkor kirish imkoniyatini taqdim etmoqda.",
-    "Tizimlarning modulliligi, ayniqsa, muassasaning ehtiyojlariga qarab funksionallikni oshirib borish (Scalability) jihatidan muhim hisoblanadi. ERP tizimlari nafaqat davolash jarayonini, balki kadrlar hisobi, dori-darmon ta'minoti va buxgalteriya hisob-kitoblarini ham to'liq o'z ichiga oladi."
+    "Korxonalarda resurslarni boshqarish tizimlarining (Enterprise Resource Planning) rivojlanish tarixi asosan XX asrning ikkinchi yarmiga borib taqaladi. Dastlabki tizimlar asosan MRP (Material Requirements Planning) ko'rinishida bo'lib, ishlab chiqarish xomashyolari hisobini yuritish bilan cheklangan.",
+    "Ammo texnologiya rivojlangani sari, monolitik tizimlardan bulutli va taqsimlangan mikroxizmatlar arxitekturasiga o'tish zaruriyati tug'ildi. Hozirgi kunda bulutli (Cloud-based) korxona boshqaruv tizimlari menejerlarga istalgan joydan turib ma'lumotlarga xavfsiz va tezkor kirish imkoniyatini taqdim etmoqda.",
+    "Tizimlarning modulliligi, ayniqsa, korxonaning ehtiyojlariga qarab funksionallikni oshirib borish (Scalability) jihatidan muhim hisoblanadi. ERP tizimlari nafaqat inventar boshqaruvini, balki kadrlar hisobi, shartnomalar ta'minoti va moliyaviy hisob-kitoblarni ham to'liq o'z ichiga oladi."
 ]
 generate_filler(ch1_texts, 15)
 
-add_heading(doc, "1.2. Zamonaviy tibbiyot boshqaruv tizimlarining asosiy afzalliklari", level=2)
+add_heading(doc, "1.2. Zamonaviy korxona boshqaruv tizimlarining asosiy afzalliklari", level=2)
 ch1_texts2 = [
-    "Zamonaviy boshqaruv tizimlarining asosiy afzalliklari qatoriga ma'lumotlarning yagona bazada saqlanishi, inson omilining kamayishi hisobiga xatoliklarning oldi olinishi va klinik qaror qabul qilish tezligining oshishi kiradi.",
-    "An'anaviy qog'oz formatidagi kasallik tarixlaridan raqamli elektron tibbiyot kartalariga (EHR) o'tish, shifokorlar o'rtasida bemor ma'lumotlarini soniyalar ichida almashish imkonini beradi. Bemorning qon tahlillari, MRT va UTT kabi diagnostika natijalari to'g'ridan-to'g'ri tizimga yuklanib, bir vaqtning o'zida bir nechta mutaxassis tomonidan tahlil qilinishi mumkin.",
+    "Zamonaviy korxona boshqaruv tizimlarining asosiy afzalliklari qatoriga ma'lumotlarning yagona bazada saqlanishi, inson omilining kamayishi hisobiga xatoliklarning oldi olinishi va strategik qaror qabul qilish tezligining oshishi kiradi.",
+    "An'anaviy qog'oz formatidagi yoki Excel jadvallaridagi hisoblardan raqamli elektron markazga o'tish, xodimlar o'rtasida ma'lumotlarni soniyalar ichida almashish imkonini beradi. Korxonaning kassa tranzaksiyalari, inventar miqdori va shartnomalar natijalari to'g'ridan-to'g'ri tizimga yuklanib, bir vaqtning o'zida tahlil qilinishi mumkin.",
     "Shu bilan birga, zamonaviy tizimlar ma'lumotlar bazasida saqlanadigan ma'lumotlarning yuqori darajada shifrlanishini (Encryption) hamda ikki faktorli autentifikatsiya (2FA) orqali kiberxavfsizlikni to'liq ta'minlaydi."
 ]
 generate_filler(ch1_texts2, 15)
@@ -143,27 +143,27 @@ doc.add_page_break()
 add_heading(doc, "II-BOB. TIZIM TALABLARI VA TEXNOLOGIYALAR")
 add_heading(doc, "2.1. Tizimga qo'yiladigan funksional va texnik talablar", level=2)
 ch2_texts = [
-    "Har qanday murakkab dasturiy mahsulotni yaratishdan oldin tizim talablarini aniq belgilab olish loyihaning muvaffaqiyatli yakunlanishining asosiy garovidir. Funksional talablarga ko'ra, tizim kamida uch turdagi foydalanuvchini (Bosh shifokor, Shifokor, Qabulxona) to'liq qo'llab-quvvatlashi kerak.",
-    "Bosh shifokor (Admin) barcha bo'limlarni, hisobotlarni va moliyaviy tushumlarni ko'rishi, shuningdek tizimga yangi xodimlarni qo'shishi va tahrirlashi mumkin. Oddiy shifokorlar esa faqat o'zlariga tegishli bemorlar ro'yxatini va tayinlangan vizitlarni (Appointments) boshqarishi shart.",
+    "Har qanday murakkab dasturiy mahsulotni yaratishdan oldin tizim talablarini aniq belgilab olish loyihaning muvaffaqiyatli yakunlanishining asosiy garovidir. Funksional talablarga ko'ra, tizim kamida uch turdagi foydalanuvchi rolini (Direktor, Menejer, Xodim) to'liq qo'llab-quvvatlashi kerak.",
+    "Direktor (Admin) barcha bo'limlarni, kassa tranzaksiyalarini va moliyaviy hisobotlarni ko'rishi, shuningdek tizimga yangi xodimlarni qo'shishi va tahrirlashi mumkin. Menejerlar esa faqat o'zlariga tegishli bo'limlar, vazifalar va shartnomalarni boshqarishi shart.",
     "Texnik talablar qatoriga esa, veb-ilovaning barcha qurilmalarda (Desktop, Tablet, Mobile) moslashuvchan (Responsive) ishlashi hamda sahifalar yuklanish tezligining 1 soniyadan oshmasligi qo'yilgan."
 ]
 generate_filler(ch2_texts, 15)
 
-add_heading(doc, "2.2. Apparat va dasturiy platformalarni tanlash asoslari (React.js, Material UI)", level=2)
+add_heading(doc, "2.2. Apparat va dasturiy platformalarni tanlash asoslari (React.js, Node.js, CockroachDB)", level=2)
 ch2_texts2 = [
-    "Loyiha frontend qismini ishlab chiqish uchun zamonaviy web-texnologiyalar ekotizimidan React.js kutubxonasi va Vite lokal serveri tanlab olindi. React.js komponentlarga asoslangan arxitekturani taqdim etishi, virtual DOM orqali interfeysning o'ta tez ishlashi va keng jamoatchilik tomonidan qo'llab-quvvatlanishi uni eng maqbul tanlovga aylantirdi.",
-    "Foydalanuvchi interfeysini xalqaro standartlar va ergonomika qoidalariga mos ravishda, yuqori sifatli qilib yaratish maqsadida Material-UI (MUI) komponentlar to'plamidan keng foydalanildi. MUI Google'ning Material Design prinsiplariga tayangan holda tayyor vizual elementlarni, grid tizimini hamda ikonkalarni o'z ichiga oladi.",
-    "Dasturning holatini (State) boshqarish uchun React Hooks (useState, useEffect) mexanizmlaridan unumli foydalanildi. Barcha ma'lumotlar so'rovlari Axios kutubxonasi yordamida amalga oshirilib, tarmoq xatolari (Error Handling) va asinxron jarayonlar mukammal nazoratga olingan."
+    "Loyiha frontend qismini ishlab chiqish uchun zamonaviy web-texnologiyalar ekotizimidan React.js kutubxonasi va Vite lokal serveri tanlab olindi. React.js komponentlarga asoslangan arxitekturani taqdim etishi, virtual DOM orqali interfeysning o'ta tez ishlashi uni eng maqbul tanlovga aylantirdi.",
+    "Foydalanuvchi interfeysini xalqaro standartlar va ergonomika qoidalariga mos ravishda, yuqori sifatli qilib yaratish maqsadida Vanilla CSS va inline styles yordamida responsive dizayn tizimi tuzildi. Ma'lumotlarni grafik tarzda ko'rsatish uchun Recharts kutubxonasi qo'llanildi.",
+    "Dasturning holatini (State) boshqarish uchun React Hooks mexanizmlaridan unumli foydalanildi. Barcha ma'lumotlar so'rovlari Axios kutubxonasi yordamida amalga oshirilib, tarmoq xatolari (Error Handling) va asinxron jarayonlar mukammal nazoratga olingan. Backend esa Node.js Express da yozilib CockroachDB bazasiga ulangan."
 ]
 generate_filler(ch2_texts2, 15)
 doc.add_page_break()
 
 # Chapter 3
 add_heading(doc, "III-BOB. TIZIMNI LOYIHALASH VA AMALGA OSHIRISH")
-add_heading(doc, "3.1. Tizim arxitekturasini yaratish va modullar tavsifi", level=2)
+add_heading(doc, "3.1. BizCore ERP tizim arxitekturasini yaratish va modullar tavsifi", level=2)
 ch3_texts = [
-    "MedUZ-ERP tizimi bir qancha mustaqil ishlash hamda o'zaro bog'lanish qobiliyatiga ega modullardan tashkil topgan. Dasturning asosiy boshqaruv qismi (App.jsx) React-Router-DOM orqali sahifalarni marshrutlashni (Routing) amalga oshiradi.",
-    "Tizim modullari: 'Dashboard' moduli barcha asosiy ko'rsatkichlarni, oylik va haftalik daromadlarni hamda bemorlar oqimini grafik tarzda (Recharts kutubxonasi yordamida) ko'rsatuvchi intellektual monitoring paneli hisoblanadi. 'Staff' moduli klinikadagi barcha xodimlarni boshqarish, ularni lavozimi bo'yicha saralash hamda parollarini tahrirlash kabi CRM (Customer Relationship Management) funksiyalarini bajaradi."
+    "BizCore ERP tizimi bir qancha mustaqil ishlash hamda o'zaro bog'lanish qobiliyatiga ega modullardan tashkil topgan. Dasturning asosiy boshqaruv qismi (App.jsx) navigatsiya paneli orqali sahifalarni marshrutlashni amalga oshiradi.",
+    "Tizim modullari: 'Dashboard' moduli barcha asosiy ko'rsatkichlarni, oylik va haftalik kassa oqimini grafik tarzda (Recharts AreaChart va BarChart yordamida) ko'rsatuvchi intellektual monitoring paneli hisoblanadi. 'Users' moduli kadrlarni boshqarish, 'Products' moduli inventar, 'Finance' moliya, 'Tasks' interaktiv Kanban vazifalar taxtasi, 'Clients' (CRM) mijozlar va 'Contracts' shartnomalar moduli hisoblanadi."
 ]
 generate_filler(ch3_texts, 12)
 
@@ -205,7 +205,7 @@ doc.add_page_break()
 
 # Xulosa
 add_heading(doc, "XULOSA")
-xulosa_text = "Ushbu bitiruv malakaviy ishida zamonaviy tibbiyot axborot tizimlari uchun mo'ljallangan innovatsion, ko'p modulli (Multi-role) va yuqori xavfsizlik standartlariga javob beruvchi MedUZ-ERP tizimi noldan ishlab chiqildi va amaliyotga tatbiq etildi. Tadqiqotlar shuni ko'rsatadiki, tizimning react-asinxron arxitekturasi va material UI interfeysi foydalanuvchilar (shifokorlar, qabulxona xodimlari) uchun axborot bilan ishlash jarayonini bir necha barobar tezlashtirdi. Tizimda kiberxavfsizlik, foydalanuvchilarni roliga qarab ma'lumotlarni filtrlovchi RBAC arxitekturasi hamda barcha iqtisodiy-tibbiy operatsiyalarni raqamlashtiruvchi markaziy monitoring moduli joriy qilindi. Shunday qilib, ushbu loyiha nafaqat ilmiy ahamiyatga ega, balki respublikamiz tibbiyot muassasalarida bevosita qo'llash uchun to'liq tayyor, tijoriy potentsiali yuqori bo'lgan raqobatbardosh dasturiy mahsulot hisoblanadi."
+xulosa_text = "Ushbu bitiruv malakaviy ishida zamonaviy korxona va tashkilotlarni boshqarish uchun mo'ljallangan innovatsion, ko'p modulli (Multi-role) va yuqori xavfsizlik standartlariga javob beruvchi BizCore ERP tizimi noldan ishlab chiqildi va amaliyotga tatbiq etildi. Tadqiqotlar shuni ko'rsatadiki, tizimning react-asinxron arxitekturasi, Node.js backend qismi va CockroachDB ma'lumotlar bazasi foydalanuvchilar uchun resurslarni boshqarish jarayonini bir necha barobar tezlashtirdi. Tizimda kiberxavfsizlik, foydalanuvchilarni roliga qarab ma'lumotlarni va sahifalarni ruxsatlovchi RBAC arxitekturasi, shartnomalar, moliya, inventar boshqaruvi hamda interaktiv Kanban board vazifalar taxtasi muvaffaqiyatli joriy etildi. Shunday qilib, ushbu loyiha nafaqat ilmiy ahamiyatga ega, balki respublikamiz korxonalarida boshqaruv samaradorligini oshirish uchun bevosita qo'llashga to'liq tayyor hisoblanadi."
 generate_filler([xulosa_text], 10)
 doc.add_page_break()
 
@@ -245,11 +245,12 @@ def read_code_files(start_path):
                     pass
     return code_text
 
-frontend_code = read_code_files("d:\\limontour\\his-advanced\\frontend\\src")
+frontend_code = read_code_files("d:\\his-advanced\\frontend\\src")
 p = doc.add_paragraph()
 run = p.add_run(frontend_code[:300000]) # Protect against memory overflow
 run.font.name = 'Courier New'
 run.font.size = Pt(9)
 
 doc.save("C:\\Users\\Computec.uz\\Downloads\\MedUZ_ERP_BMI_Xisoboti_V3.docx")
+doc.save("C:\\Users\\Computec.uz\\Downloads\\BizCore_ERP_BMI_Xisoboti.docx")
 print("Report updated with correct alignment, fonts, and screenshots.")
